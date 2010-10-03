@@ -13,19 +13,18 @@
 #endif
 
 #include <stdint.h>
-#include <X11/Xlib.h>
 
-#define WINDOW_TYPE    uint32_t
-#define GROUP_TYPE     unsigned char
+typedef unsigned int   WINDOW_TYPE ;
+typedef unsigned int GROUP_TYPE ;
 
 void _kbdd_storage_init();
 
 void _kbdd_storage_free();
 
-void _kbdd_storage_put(Window win, GROUP_TYPE group);
+void _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group);
 
-GROUP_TYPE _kbdd_storage_get(Window win);
+GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win);
 
-void _kbdd_storage_remove(Window win);
+void _kbdd_storage_remove(WINDOW_TYPE win);
 
 #endif

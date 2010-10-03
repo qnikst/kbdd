@@ -5,7 +5,6 @@
  *
  * See file LICENSE for license information.
  */
-#include <X11/Xlib.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include "storage.h"
@@ -18,6 +17,7 @@
 GHashTable *gStorage = NULL;
 #define GINT_TO_POINTER(i) ((gpointer) (glong) (i))
 #define GUINT_TO_POINTER(u) ((gpointer) (gulong) (u))
+#define POINTER_TO_GUINT(u) ((gulong)(gpointer)(u))
 #endif
 
 void debug();
@@ -38,34 +38,30 @@ void _kbdd_storage_free() {
     }
 }
 
-void _kbdd_storage_put(Window win, GROUP_TYPE group)
+void _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
 {
     if ( gStorage != NULL ) {
 #ifdef STORAGE_GHASH
         gpointer key = GUINT_TO_POINTER(win);
         gpointer val = GUINT_TO_POINTER(group);
-//        printf("%u %u => %u %u\n", win, group,key, val);
         g_hash_table_replace(gStorage, key, val);
 //        debug();
     }
 #endif
 }
 
-GROUP_TYPE _kbdd_storage_get(Window win)
+GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win)
 {
     GROUP_TYPE group;
     if (gStorage != NULL) 
     {
 #ifdef STORAGE_GHASH
-//        debug();
         gpointer key = NULL;
         gpointer value = NULL;
         gpointer pWindow = GUINT_TO_POINTER(win);
-//        printf("%u -> %u %u %u\n",win, pWindow);
         if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
         {
-            group = (GROUP_TYPE)value;
-//            printf(":%u %u\n",value,group);
+            group = (GROUP_TYPE)POINTER_TO_GUINT(value);
         }
         else 
         {
@@ -76,7 +72,7 @@ GROUP_TYPE _kbdd_storage_get(Window win)
     return group;
 }
 
-void _kbdd_storage_remove(Window win)
+void _kbdd_storage_remove(WINDOW_TYPE win)
 {
     if (gStorage != NULL) {
 #ifdef STORAGE_GHASH
@@ -86,12 +82,13 @@ void _kbdd_storage_remove(Window win)
     }
 }
 
+
+/*
 void debug() {
     GHashTableIter iter;
     g_hash_table_iter_init (&iter, gStorage);
     int size=g_hash_table_size(gStorage);
     printf("=================\nFirst size: %d\n",size);
-
     uint32_t *val;
     uint32_t *key_;
     while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &val))
@@ -99,5 +96,5 @@ void debug() {
         printf("key %u ---> %u\n",(uint32_t)key_,(uint32_t)val);
     }
     printf("=================\n");
-}
+}*/
 

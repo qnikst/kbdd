@@ -17,7 +17,6 @@ GTK_CFLAGS = `pkg-config gtk+-2.0 --cflags`
 
 
 all: ${FILES} src/kbdd src/libkbdd.so
-	@echo  "build all"
 
 options:
 	@echo libkbdd build options
@@ -26,11 +25,11 @@ options:
 	@echo "CC      = ${CC}"
 
 src/storage.o:
-	$(CC) $(CFLAGS) ${SRCDIR}/storage.c -c -o storage.o ${GLIB_LIBS} ${GLIB_CFLAGS} -lX11 -DSTORAGE_GHASH -fPIC
+	$(CC) $(CFLAGS) ${SRCDIR}/storage.c -c -o storage.o ${GLIB_LIBS} ${GLIB_CFLAGS} -DSTORAGE_GHASH -fPIC
 
 src/libkbdd.o: src/storage.o
 	@echo "compile libkbdd"
-	$(CC) $(CFLAGS) ${SRCDIR}/libkbdd.c storage.o -c -o libkbdd.o ${GLIB_LIBS} ${GLIB_CFLAGS} -lX11 -fPIC
+	$(CC) $(CFLAGS) ${SRCDIR}/libkbdd.c storage.o -c -o libkbdd.o -lX11 -fPIC
 
 src/libkbdd.so: src/libkbdd.o
 	$(CC) $(CFLAGS) -shared libkbdd.o storage.o -o libkbdd.so ${GLIB_LIBS} ${GLIB_CFLAGS} -lX11 -fPIC
