@@ -1,1 +1,26 @@
-simple deamond and library to make per window layout
+kbdd - kbd daemon
+===================
+simple daemon and library to make per window layout
+
+Requirements
+------------
+ * xorg server
+ * glib
+
+Installation
+------------
+
+make 
+make install
+
+Running
+-----------
+
+run $kbdd
+
+Troubleshooting
+---------------
+All bugs and issues can be posted to 
+http://github.com/qnikst/kbdd/issues
+or sent to 
+jabber: qnikst@gentoo.ru
