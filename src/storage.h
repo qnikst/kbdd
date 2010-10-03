@@ -1,3 +1,10 @@
+/*
+ * vim:ts=4:expandtab
+ *
+ * © 2010 Alexander Vershilov and contributors
+ *
+ * See file LICENSE for license information.
+ */
 #ifndef _STORAGE_H_
 #define _STORAGE_H_
 
