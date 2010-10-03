@@ -5,15 +5,19 @@
 #include <glib.h>
 #endif
 
+#include <stdint.h>
 #include <X11/Xlib.h>
+
+#define WINDOW_TYPE    uint32_t
+#define GROUP_TYPE     unsigned char
 
 void _kbdd_storage_init();
 
 void _kbdd_storage_free();
 
-void _kbdd_storage_put(Window win, int group);
+void _kbdd_storage_put(Window win, GROUP_TYPE group);
 
-int  _kbdd_storage_get(Window win);
+GROUP_TYPE _kbdd_storage_get(Window win);
 
 void _kbdd_storage_remove(Window win);
 

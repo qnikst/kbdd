@@ -42,13 +42,14 @@ int Kbdd_set_window_layout ( Display * display, Window win )
     return XkbLockGroup(display, XkbUseCoreKbd, group);
 }
 
-void Kbdd_update_window_layout ( Display * display, Window win ) 
+void Kbdd_update_window_layout ( Display * display, Window win,unsigned int grp ) 
 {
-    XkbStateRec state;
-    if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success )
-    {
-        _kbdd_storage_put(win, state.group);
-    }
+//    XkbStateRec state;
+//    if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success )
+//    {
+//      _kbdd_storage_put(win, state.group);
+//    }
+    _kbdd_storage_put(win, grp);
 }
 
 Display * Kbdd_initialize_display( )
@@ -62,32 +63,8 @@ Display * Kbdd_initialize_display( )
     display = XkbOpenDisplay(display_name,&xkbEventType,&xkbError, &mjr,&mnr,&reason_rtrn);
     if (display == NULL) 
     {
-        switch (reason_rtrn) {
-            case XkbOD_BadLibraryVersion :
-            case XkbOD_BadServerVersion :
-                warnx("xxkb was compiled with XKB version %d.%02d",
-                      XkbMajorVersion, XkbMinorVersion);
-                warnx("But %s uses incompatible version %d.%02d",
-                      reason_rtrn == XkbOD_BadLibraryVersion ? "Xlib" : "Xserver",
-                      mjr, mnr);
-                break;
-
-        case XkbOD_ConnectionRefused :
-            warnx("Connection refused");
-            break;
-
-        case XkbOD_NonXkbServer:
-            warnx("XKB extension not present");
-            break;
-
-        default:
-            warnx("Unknown error %d from XkbOpenDisplay", reason_rtrn);
-            break;
-        }
-        exit( EXIT_FAILURE );
     }
     _xkbEventType = xkbEventType;
-    printf("display: %p\n",display);
     return display;
 }
 
@@ -99,12 +76,12 @@ void Kbdd_initialize_listeners( Display * display )
     XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
     XSelectInput( display, root_win, StructureNotifyMask | SubstructureNotifyMask
-            | EnterWindowMask | FocusChangeMask );
+            | EnterWindowMask | FocusChangeMask | LeaveWindowMask );
 }
 
 void Kbdd_default_loop(Display * display) 
 {
-    printf("%p \n",display);
+    assert(display!=NULL);
     Window focused_win;
     int revert,grp;
     XkbEvent ev; 
@@ -118,7 +95,7 @@ void Kbdd_default_loop(Display * display)
                 case XkbStateNotify:
                     grp = ev.state.locked_group;
                     XGetInputFocus(display, &focused_win, &revert);
-                    Kbdd_update_window_layout( display, focused_win);
+                    Kbdd_update_window_layout( display, focused_win,grp);
                     break;
                 default:
                     break;
@@ -129,15 +106,20 @@ void Kbdd_default_loop(Display * display)
             switch (ev.type)
             {
                 case DestroyNotify:
-                    Kbdd_remove_window(ev.core.xdestroywindow.event);
+                    Kbdd_remove_window(ev.core.xdestroywindow.windowww);
                     break;
                 case CreateNotify:
                     Kbdd_add_window(display, ev.core.xcreatewindow.window);
                     break;
                 case FocusIn:
-                    Kbdd_set_window_layout(display, ev.core.xfocus.window);
+                    XGetInputFocus(display, &focused_win, &revert);
+                    Kbdd_set_window_layout(display, focused_win);
                     break;
+                case FocusOut:
+                    XGetInputFocus(display, &focused_win, &revert);
+                    Kbdd_set_window_layout(display, focused_win);
                 default:
+                    XGetInputFocus(display, &focused_win, &revert);
                     break;
             }
         }
