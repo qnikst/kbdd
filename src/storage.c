@@ -73,7 +73,6 @@ void _kbdd_storage_remove(Window win)
 {
     if (gStorage != NULL) {
 #ifdef STORAGE_GHASH
-        printf("remove %u\n",win);
         gpointer key = GUINT_TO_POINTER(win);
         g_hash_table_remove(gStorage, key);
 #endif

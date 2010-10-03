@@ -106,7 +106,7 @@ void Kbdd_default_loop(Display * display)
             switch (ev.type)
             {
                 case DestroyNotify:
-                    Kbdd_remove_window(ev.core.xdestroywindow.windowww);
+                    Kbdd_remove_window(ev.core.xdestroywindow.window);
                     break;
                 case CreateNotify:
                     Kbdd_add_window(display, ev.core.xcreatewindow.window);
