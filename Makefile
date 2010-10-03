@@ -36,7 +36,7 @@ src/libkbdd.so: src/libkbdd.o
 	$(CC) $(CFLAGS) -shared libkbdd.o storage.o -o libkbdd.so ${GLIB_LIBS} ${GLIB_CFLAGS} -lX11 -fPIC
 
 src/kbdd: src/libkbdd.o
-	$(CC) $(CFLAGS) ${SRCDIR}/test.c libkbdd.o storage.o -o kbdd ${GLIB_LIBS} ${GLIB_CFLAGS} -lX11
+	$(CC) $(CFLAGS) ${SRCDIR}/kbdd.c libkbdd.o storage.o -o kbdd ${GLIB_LIBS} ${GLIB_CFLAGS} -lX11
 
 
 install: all
