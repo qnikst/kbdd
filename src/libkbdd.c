@@ -17,6 +17,8 @@
 #include "libkbdd.h"
 
 volatile int _xkbEventType;
+volatile UpdateCallback    _updateCallback = NULL;
+volatile void *            _updateUserdata = NULL;
 
 void Kbdd_init()
 {
@@ -35,6 +37,8 @@ int Kbdd_add_window(Display * display, Window window)
     {
         WINDOW_TYPE win = (WINDOW_TYPE)window;
         _kbdd_storage_put(win, state.group);
+        if ( _updateCallback != NULL ) 
+            _updateCallback(state.group, _updateUserdata);
     }
     return 0;
 }
@@ -48,7 +52,10 @@ void Kbdd_remove_window(Window window)
 int Kbdd_set_window_layout ( Display * display, Window win ) 
 {
     GROUP_TYPE group = _kbdd_storage_get( (WINDOW_TYPE)win );
-    return XkbLockGroup(display, XkbUseCoreKbd, group);
+    int result = XkbLockGroup(display, XkbUseCoreKbd, group);
+    if (result && _updateCallback != NULL) 
+        _updateCallback(group, _updateUserdata);
+    return result;
 }
 
 void Kbdd_update_window_layout ( Display * display, Window window, unsigned char grp ) 
@@ -71,12 +78,17 @@ Display * Kbdd_initialize_display( )
     int mjr = XkbMajorVersion;
     int mnr = XkbMinorVersion;
     display = XkbOpenDisplay(display_name,&xkbEventType,&xkbError, &mjr,&mnr,&reason_rtrn);
-    if (display == NULL) 
-    {
-    }
     _xkbEventType = xkbEventType;
     return display;
 }
+
+void setupUpdateCallback(UpdateCallback callback,void * userData ) 
+{
+    _updateCallback = callback;
+    _updateUserdata = userData;
+}
+
+
 
 void Kbdd_initialize_listeners( Display * display )
 {

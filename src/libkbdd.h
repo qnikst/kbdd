@@ -12,6 +12,9 @@
 #include <X11/XKBlib.h>
 #include "storage.h"
 
+
+typedef void (*UpdateCallback)(unsigned int, void *);
+
 /**
  * Initialize subsystem
  */
@@ -37,6 +40,8 @@ void Kbdd_update_window_layout(Display *, Window, unsigned char group);
  */
 void Kbdd_remove_window(Window);
 
+
+void setupUpdateCallback(UpdateCallback, void *);
 
 /**
  * default main loop that need to make xkbd working
