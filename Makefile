@@ -46,6 +46,7 @@ install: all
 	$(INSTALL) -m 0755 kbdd $(DESTDIR)$(PREFIX)/bin/
 	$(INSTALL) -m 0644 libkbdd.so $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) -m 0644 src/libkbdd.h $(DESTDIR)$(PREFIX)/include
+	$(INSTALL) -m 0644 kbdd.1 ${DESTDIR}${MANPREFIX}/man1/kbdd.1
 
 clean: 
 	rm -f *.o *.so kbdd

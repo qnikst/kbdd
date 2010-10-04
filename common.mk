@@ -3,6 +3,8 @@ UNAME=$(shell uname)
 DEBUG=1
 INSTALL=install
 PREFIX=/usr
+MANPREFIX = ${PREFIX}/share/man
+
 ifeq ($(PREFIX),/usr)
 SYSCONFDIR=/etc
 else
