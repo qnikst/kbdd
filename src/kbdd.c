@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-
+#include <sys/stat.h>
 
 #include <X11/Xlib.h>
 #include <errno.h>
@@ -32,6 +32,7 @@ int main_proc()
     Kbdd_initialize_listeners(display);
     Kbdd_default_loop();
     Kbdd_clean();
+    return 0;
 }
 
 
@@ -57,7 +58,7 @@ int main_fork()
     sid = setsid();
     if ( sid < 0 ) 
     {
-        fprintf("Error: setsid failed: %s\n", strerror(errno));
+        fprintf(stderr,"Error: setsid failed: %s\n", strerror(errno));
         exit( EXIT_FAILURE );
     }
     printf("kbdd pid: %i\n",sid);
@@ -74,7 +75,8 @@ int main_fork()
     stdioFD = open("/dev/null",O_RDWR);
     dup(stdioFD);
     dup(stdioFD);
-    setpgrp();
+    //setpgrp();
+    return 0;
 }
 
 
