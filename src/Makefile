@@ -1,3 +1,5 @@
+include ../common.mk
+
 pkg_packages := dbus-1 dbus-glib-1 glib-2.0
 
 PKG_CFLAGS := $(shell pkg-config --cflags $(pkg_packages))
@@ -10,8 +12,7 @@ ADD_CFLAGS += -DNO_DAEMON
 CFLAGS  := $(PKG_CFLAGS) $(ADD_CFLAGS) $(CFLAGS)
 LDFLAGS := $(PKG_LDFLAGS) $(LDFLAGS)
 
-
-all: dbus kbdd
+all: subsystems kbdd
 
 kbdd: kbdd.o storage.o libkbdd.o dbus
 	$(CC) $(LDFLAGS) -lX11 -lpthread kbdd.o storage.o libkbdd.o dbus/server.o -o $@
@@ -20,16 +21,15 @@ storage.o: storage.c
 	$(CC) $(CFLAGS) -DSTORAGE_GHASH -c -o $@ $<
 
 libkbdd.o: libkbdd.c
-	$(CC) $(CFLAGS) -lX11 -c -o $@ $<
+	$(CC) $(CFLAGS) -lX11 -DDEBUG -c -o $@ $<
 
 kbdd.o: kbdd.c
-	$(CC) $(CFLAGS) -DWITH_DBUS -c -o $@ $<
+	$(CC) $(CFLAGS) -DPROGRAM_NAME=${PACKAGE_NAME} -DENABLE_DBUS -DDEBUG -c -o $@ $<
 
-dbus: 
-	$(MAKE) -C dbus/ 
+subsystems: 
+	cd dbus && $(MAKE)
 
-clean: dbus-clean
+clean: 
+	cd dbus && $(MAKE) clean
 	$(RM) *.o kbdd
 
-dbus-clean: 
-	$(MAKE) -C dbus/ clean

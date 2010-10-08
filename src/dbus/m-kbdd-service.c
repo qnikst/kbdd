@@ -1,5 +1,6 @@
 #include "m-kbdd-service.h"
 #include "assert.h"
+#include "../common-defs.h"
 
 G_DEFINE_TYPE(MKbddService, m_kbdd_service, G_TYPE_OBJECT)
 
@@ -61,7 +62,8 @@ kbdd_service_emitSignal(MKbddService * obj,
                         const char * message) 
 {
     MKbddServiceClass * klass = M_KBDD_SERVICE_GET_CLASS(obj);
-
+    assert(obj!=NULL);
+    assert(klass!=NULL);
     assert( (num < E_SIGNAL_COUNT) && (num>0) );
 
     g_signal_emit(obj, klass->signals[num], 0, message);
@@ -114,6 +116,8 @@ m_kbdd_service_set_layout(MKbddService *obj, unsigned int value)
     if (obj->layout != value) 
     {
         obj->layout = value;
-        kbdd_service_emitSignal(obj, E_SIGNAL_LAYOUT_CHANGED, "layout_changed");
+        MKbddServiceClass * klass = M_KBDD_SERVICE_GET_CLASS(obj);
+        assert(klass != NULL);
+        g_signal_emit(obj, klass->signals[E_SIGNAL_LAYOUT_CHANGED], 0, value);
     }
 }

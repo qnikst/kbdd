@@ -15,6 +15,7 @@
 #include <assert.h>
 
 #include "libkbdd.h"
+#include "common-defs.h"
 
 volatile int _xkbEventType;
 volatile UpdateCallback    _updateCallback = NULL;
@@ -108,9 +109,11 @@ void Kbdd_setDisplay(Display * display)
 
 void * Kbdd_default_loop(Display * display) 
 {
+    dbg( "default loop started\n");
     if (display == NULL)
         display = _display;
     assert(display!=NULL);
+
     Window focused_win;
     int revert;
     unsigned char grp;
@@ -118,6 +121,7 @@ void * Kbdd_default_loop(Display * display)
     while ( 1 ) 
     {
         XNextEvent(display, &ev.core);
+        dbg( "LIBKBDD event caught\n");
         if ( ev.type == _xkbEventType)
         {
             switch (ev.any.xkb_type)

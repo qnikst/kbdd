@@ -19,7 +19,7 @@
 #include <X11/Xlib.h>
 #include <errno.h>
 
-#ifdef WITH_DBUS
+#ifdef ENABLE_DBUS
 #include <pthread.h>
 #include <glib.h>
 #include "dbus/m-kbdd-service.h"
@@ -27,10 +27,11 @@
 #endif
 
 #include "libkbdd.h"
+#include "common-defs.h"
 
 #define OPEN_MAX_GUESS 256
 
-#ifdef WITH_DBUS
+#ifdef ENABLE_DBUS
 MKbddService * service = NULL;
 DBusGConnection * bus  = NULL;
 DBusGProxy * proxy     = NULL;
@@ -78,7 +79,7 @@ int main_fork()
     return 0;
 }
 
-#ifdef WITH_DBUS
+#ifdef ENABLE_DBUS
 int dbus_init( ) {
 
     char * request_ret = NULL;
@@ -154,6 +155,7 @@ int dbus_init( ) {
 
 void onLayoutUpdate(uint32_t layout, void * obj) 
 {
+    dbg(" EVENT LAYOUT CHANGED %u\n", layout);
     m_kbdd_service_set_layout((MKbddService *)obj,layout);
 }
 #endif
@@ -162,7 +164,7 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 int main(int argc, char * argv[])
 {
 
-#ifdef WITH_DBUS
+#ifdef ENABLE_DBUS
     g_type_init();
     GMainLoop * mainloop = NULL;
     mainloop = g_main_loop_new(NULL,FALSE);
@@ -181,12 +183,13 @@ int main(int argc, char * argv[])
     printf("Not daemonizing (build with NO_DAEMON-build define)\n");
 #endif
 
-#ifndef WITH_DBUS
+#ifndef ENABLE_DBUS
     Kbdd_init();
     Display * display;
     display = Kbdd_initialize_display();
     Kbdd_initialize_listeners(display);
     Kbdd_setupUpdateCallback(onLayoutUpdate, service);
+    g_main_loop_run(mainloop);
     Kbdd_default_loop();
     Kbdd_clean();
 #else
@@ -194,12 +197,13 @@ int main(int argc, char * argv[])
     Display * display;
     display = Kbdd_initialize_display();
     Kbdd_initialize_listeners(display);
-    Kbdd_setDisplay(display);
+//    Kbdd_setDisplay(display);
     Kbdd_setupUpdateCallback(onLayoutUpdate, service);
-    pthread_t thread1;
-    pthread_create(  &thread1, NULL, Kbdd_default_loop, NULL);
-    g_main_loop_run(mainloop);
-    pthread_join(thread1, NULL);
+    Kbdd_default_loop(display);
+//    pthread_t thread1;
+//    pthread_create(  &thread1, NULL, Kbdd_default_loop, NULL);
+//    g_main_loop_run(mainloop);
+//    pthread_join(thread1, NULL);
     Kbdd_clean();
 #endif
     return (EXIT_SUCCESS);
