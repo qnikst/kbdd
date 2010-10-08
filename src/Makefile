@@ -11,8 +11,8 @@ LDFLAGS := $(PKG_LDFLAGS) $(LDFLAGS)
 
 all: dbus kbdd
 
-kbdd: kbdd.o storage.o libkbdd.o
-	$(CC) $(LDFLAGS) -lX11 kbdd.o storage.o libkbdd.o -o $@
+kbdd: kbdd.o storage.o libkbdd.o dbus
+	$(CC) $(LDFLAGS) -lX11 -lpthread kbdd.o storage.o libkbdd.o dbus/server.o -o $@
 
 storage.o: storage.c
 	$(CC) $(CFLAGS) -DSTORAGE_GHASH -c -o $@ $<
@@ -21,10 +21,9 @@ libkbdd.o: libkbdd.c
 	$(CC) $(CFLAGS) -lX11 -c -o $@ $<
 
 kbdd.o: kbdd.c
-	$(CC) $(CFLAGS) -lX11 -c -o $@ $<
+	$(CC) $(CFLAGS) -DWITH_DBUS -DNO_DAEMON -c -o $@ $<
 
-
-dbus:
+dbus: 
 	$(MAKE) -C dbus/ 
 
 clean: dbus-clean

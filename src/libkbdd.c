@@ -19,6 +19,7 @@
 volatile int _xkbEventType;
 volatile UpdateCallback    _updateCallback = NULL;
 volatile void *            _updateUserdata = NULL;
+volatile static Display *  _display        = NULL;
 
 void Kbdd_init()
 {
@@ -99,8 +100,16 @@ void Kbdd_initialize_listeners( Display * display )
             | EnterWindowMask | FocusChangeMask | LeaveWindowMask );
 }
 
-void Kbdd_default_loop(Display * display) 
+void Kbdd_setDisplay(Display * display)
 {
+    assert(display != NULL);
+    _display = display;
+}
+
+void * Kbdd_default_loop(Display * display) 
+{
+    if (display == NULL)
+        display = _display;
     assert(display!=NULL);
     Window focused_win;
     int revert;
