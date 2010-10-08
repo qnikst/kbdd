@@ -75,7 +75,6 @@ int main_fork()
     stdioFD = open("/dev/null",O_RDWR);
     dup(stdioFD);
     dup(stdioFD);
-    //setpgrp();
     return 0;
 }
 
@@ -83,7 +82,17 @@ int main_fork()
 
 int main(int argc, char * argv[])
 {
+#ifndef NO_DAEMON
+#ifndef DAEMON
     main_fork();
+#else
+    if ( daemon(0,0) != 0 ) {
+        perror("Failed to daemonize.\n");
+    }
+#endif
+#else
+    printf("Not daemonizing (build with NO_DAEMON-build define)\n");
+#endif
     main_proc();
     return (EXIT_SUCCESS);
 }
