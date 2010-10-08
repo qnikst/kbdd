@@ -88,9 +88,7 @@ m_kbdd_service_setLayout(MKbddService * obj, unsigned int valueIn,
     if (obj->layout != valueIn) 
     {
         obj->layout = valueIn;
-
         kbdd_service_emitSignal(obj, E_SIGNAL_LAYOUT_CHANGED, "layout_changed");
-
     }
     return 1;
 }
@@ -120,4 +118,15 @@ int
 m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 {
     return 1;
+}
+
+void
+m_kbdd_service_set_layout(MKbddService *obj, unsigned int value)
+{
+    assert(obj != NULL);
+    if (obj->layout != value) 
+    {
+        obj->layout = value;
+        kbdd_service_emitSignal(obj, E_SIGNAL_LAYOUT_CHANGED, "layout_changed");
+    }
 }
