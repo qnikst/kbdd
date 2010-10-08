@@ -38,7 +38,7 @@ int Kbdd_add_window(Display * display, Window window)
         WINDOW_TYPE win = (WINDOW_TYPE)window;
         _kbdd_storage_put(win, state.group);
         if ( _updateCallback != NULL ) 
-            _updateCallback(state.group, _updateUserdata);
+            _updateCallback(state.group, (void *)_updateUserdata);
     }
     return 0;
 }
@@ -54,7 +54,7 @@ int Kbdd_set_window_layout ( Display * display, Window win )
     GROUP_TYPE group = _kbdd_storage_get( (WINDOW_TYPE)win );
     int result = XkbLockGroup(display, XkbUseCoreKbd, group);
     if (result && _updateCallback != NULL) 
-        _updateCallback(group, _updateUserdata);
+        _updateCallback(group, (void *)_updateUserdata);
     return result;
 }
 
@@ -82,13 +82,11 @@ Display * Kbdd_initialize_display( )
     return display;
 }
 
-void setupUpdateCallback(UpdateCallback callback,void * userData ) 
+void Kbdd_setupUpdateCallback(UpdateCallback callback,void * userData ) 
 {
     _updateCallback = callback;
     _updateUserdata = userData;
 }
-
-
 
 void Kbdd_initialize_listeners( Display * display )
 {

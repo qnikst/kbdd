@@ -41,7 +41,7 @@ void Kbdd_update_window_layout(Display *, Window, unsigned char group);
 void Kbdd_remove_window(Window);
 
 
-void setupUpdateCallback(UpdateCallback, void *);
+void Kbdd_setupUpdateCallback(UpdateCallback, void *);
 
 /**
  * default main loop that need to make xkbd working
