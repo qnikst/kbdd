@@ -1,9 +1,15 @@
 VERSION=0.1
+PACKAGE_NAME=kbdd
+PACKAGE_VERSION=$(VERSION)
 UNAME=$(shell uname)
 DEBUG=1
 INSTALL=install
 PREFIX=/usr
 MANPREFIX = ${PREFIX}/share/man
+DBUSDIR = ${PREFIX}/share/dbus-1
+
+#options
+WITH_DBUS=1
 
 ifeq ($(PREFIX),/usr)
 SYSCONFDIR=/etc

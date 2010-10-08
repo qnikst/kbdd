@@ -152,7 +152,7 @@ int dbus_init( ) {
 }
 
 
-void onLayoutUpdate(unsigned int layout, void * obj) 
+void onLayoutUpdate(uint32_t layout, void * obj) 
 {
     m_kbdd_service_set_layout((MKbddService *)obj,layout);
 }
@@ -186,6 +186,7 @@ int main(int argc, char * argv[])
     Display * display;
     display = Kbdd_initialize_display();
     Kbdd_initialize_listeners(display);
+    Kbdd_setupUpdateCallback(onLayoutUpdate, service);
     Kbdd_default_loop();
     Kbdd_clean();
 #else

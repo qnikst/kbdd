@@ -33,10 +33,10 @@ m_kbdd_service_class_init (MKbddServiceClass *klass)
             0,
             NULL,//Accumulator
             NULL,//Userdata Accumulator
-            g_cclosure_marshal_VOID__STRING,
+            g_cclosure_marshal_VOID__UINT,
             G_TYPE_NONE,
             1,
-            G_TYPE_STRING);
+            G_TYPE_UINT);
         klass->signals[i] = signalId;
     }
 
@@ -54,19 +54,6 @@ m_kbdd_service_new (void)
 {
     return g_object_new (M_TYPE_KBDD_SERVICE, NULL);
 }
-
-int 
-kbdd_next_layout(MKbddService *object, DBusGMethodInvocation * context)
-{
-    return 1;
-}
-
-int 
-kbdd_set_policy(MKbddService *object, unsigned int policy, DBusGMethodInvocation * context)
-{
-    return 1;
-}
-
 
 static void
 kbdd_service_emitSignal(MKbddService * obj,
@@ -101,13 +88,13 @@ m_kbdd_service_getLayout(MKbddService * obj, unsigned int * valueOut, GError ** 
     *valueOut = obj->layout;
     return 1;
 }
-
+/*
 int
 kbdd_layout_changed(GObject self, unsigned int new_state) 
 {
     return 1;
 }
-
+*/
 int
 m_kbdd_service_next_layout(MKbddService *obj, GError ** error) 
 {

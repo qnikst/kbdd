@@ -5,6 +5,8 @@ PKG_LDFLAGS := $(shell pkg-config --libs $(pkg_packages))
 
 ADD_CFLAGS := -g -Wall -DG_DISABLE_DEPRECATED
 
+ADD_CFLAGS += -DNO_DAEMON
+
 CFLAGS  := $(PKG_CFLAGS) $(ADD_CFLAGS) $(CFLAGS)
 LDFLAGS := $(PKG_LDFLAGS) $(LDFLAGS)
 
@@ -21,7 +23,7 @@ libkbdd.o: libkbdd.c
 	$(CC) $(CFLAGS) -lX11 -c -o $@ $<
 
 kbdd.o: kbdd.c
-	$(CC) $(CFLAGS) -DWITH_DBUS -DNO_DAEMON -c -o $@ $<
+	$(CC) $(CFLAGS) -DWITH_DBUS -c -o $@ $<
 
 dbus: 
 	$(MAKE) -C dbus/ 
