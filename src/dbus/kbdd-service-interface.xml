@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/ru/gentoo/kbdd">
+    <interface name="ru.gentoo.kbdd">
+        <signal name="layoutChanged">
+            <arg type="u" name="layout_id" direction="out"/>
+        </signal>
+
+        <method name="next_layout">
+        </method>
+       
+        <method name="set_policy">
+            <arg type="u" name="policy" direction="in"/>
+        </method>
+  </interface>
+</node>
+
