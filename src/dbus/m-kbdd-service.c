@@ -90,13 +90,7 @@ m_kbdd_service_getLayout(MKbddService * obj, unsigned int * valueOut, GError ** 
     *valueOut = obj->layout;
     return 1;
 }
-/*
-int
-kbdd_layout_changed(GObject self, unsigned int new_state) 
-{
-    return 1;
-}
-*/
+
 int
 m_kbdd_service_next_layout(MKbddService *obj, GError ** error) 
 {
@@ -118,6 +112,7 @@ m_kbdd_service_set_layout(MKbddService *obj, unsigned int value)
         obj->layout = value;
         MKbddServiceClass * klass = M_KBDD_SERVICE_GET_CLASS(obj);
         assert(klass != NULL);
+        dbg(" set layout event (emmitting signal)");
         g_signal_emit(obj, klass->signals[E_SIGNAL_LAYOUT_CHANGED], 0, value);
     }
 }
