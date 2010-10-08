@@ -40,8 +40,11 @@ struct _MKbddServiceClass {
 };
 
 //void m_test_service_ping (MTestService *object, DBusGMethodInvocation *context);
-int kbdd_next_layout(MKbddService *object, DBusGMethodInvocation * context);
-int kbdd_set_policy(MKbddService *object, unsigned int policy, DBusGMethodInvocation * context);
+//int kbdd_next_layout(MKbddService *object, DBusGMethodInvocation * context);
+//int kbdd_set_policy(MKbddService *object, unsigned int policy, DBusGMethodInvocation * context);
+
+int m_kbdd_service_next_layout(MKbddService *obj, GError ** error);
+int m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error);
 
 MKbddService *m_kbdd_service_new (void);
 GType m_kbdd_service_get_type (void);

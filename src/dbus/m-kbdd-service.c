@@ -104,8 +104,20 @@ m_kbdd_service_getLayout(MKbddService * obj, unsigned int * valueOut, GError ** 
     return 1;
 }
 
-
+int
 kbdd_layout_changed(GObject self, unsigned int new_state) 
 {
+    return 1;
+}
 
+int
+m_kbdd_service_next_layout(MKbddService *obj, GError ** error) 
+{
+    return 1;
+}
+
+int 
+m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
+{
+    return 1;
 }

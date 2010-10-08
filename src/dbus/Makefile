@@ -15,7 +15,7 @@ LDFLAGS := $(PKG_LDFLAGS) $(LDFLAGS)
 
 #Specify all tools used in project
 GLIB_GENMARSHAL:= $(shell pkg-config glib-2.0 --variable=glib_genmarshal)
-DBUS_BINDING_TOOL:=dbusbindingtool
+DBUS_BINDING_TOOL:=dbus-binding-tool
 
 
 #Specify constants
@@ -33,14 +33,16 @@ all: $(targets)
 # File where all marshal functions should located
 kbdd-marshal.list:
 
-server: server.o
-	$(CC) $* -o $@ $(LDFLAGS)
+server: dbus-test.o server.o
+	$(CC) dbus-test.o server.o -o $@ $(LDFLAGS)
 
 server.o: m-kbdd-service.c m-kbdd-service-marshal.o kbdd-service-glue.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+dbus-test.o: dbus-test.c 
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-m-kbdd-service.o: 
+m-kbdd-service.o: m-kbdd-service.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 m-kbdd-service-marshal.o: m-kbdd-service-marshal.c m-kbdd-service-marshal.h
