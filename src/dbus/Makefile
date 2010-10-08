@@ -44,8 +44,7 @@ dbus-test.o: dbus-test.c server.o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 m-kbdd-service.o: m-kbdd-service.c
-	@echo ${DEBUG}
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -DDEBUG -c -o $@ $<
 
 m-kbdd-service-marshal.o: m-kbdd-service-marshal.c m-kbdd-service-marshal.h
 	$(CC) $(CFLAGS) -c -o $@ $<
