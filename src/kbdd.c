@@ -22,6 +22,7 @@
 #ifdef ENABLE_DBUS
 #include <pthread.h>
 #include <glib.h>
+#include <glib/gthread.h>
 #include "dbus/m-kbdd-service.h"
 #include "dbus/kbdd-service-glue.h"
 #endif
@@ -164,13 +165,6 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 int main(int argc, char * argv[])
 {
 
-#ifdef ENABLE_DBUS
-    g_type_init();
-    GMainLoop * mainloop = NULL;
-    mainloop = g_main_loop_new(NULL,FALSE);
-    dbus_init();
-#endif
-
 #ifndef NO_DAEMON
 #ifndef DAEMON
     main_fork();
@@ -183,29 +177,36 @@ int main(int argc, char * argv[])
     printf("Not daemonizing (build with NO_DAEMON-build define)\n");
 #endif
 
+#ifdef ENABLE_DBUS
+    g_type_init();
+    GMainLoop * mainloop = NULL;
+    mainloop = g_main_loop_new(NULL,FALSE);
+    if ( !g_thread_supported () ) {
+        dbg("gthread not supported  - initializing");
+        g_thread_init ( NULL );
+    }
+    dbus_g_thread_init ();
+    dbus_init();
+#endif
+
+    Kbdd_init();
+    Display * display;
+    display = Kbdd_initialize_display();
+    Kbdd_initialize_listeners(display);
 #ifndef ENABLE_DBUS
-    Kbdd_init();
-    Display * display;
-    display = Kbdd_initialize_display();
-    Kbdd_initialize_listeners(display);
-    Kbdd_setupUpdateCallback(onLayoutUpdate, service);
-    g_main_loop_run(mainloop);
-    Kbdd_default_loop();
-    Kbdd_clean();
-#else
-    Kbdd_init();
-    Display * display;
-    display = Kbdd_initialize_display();
-    Kbdd_initialize_listeners(display);
-//    Kbdd_setDisplay(display);
-    Kbdd_setupUpdateCallback(onLayoutUpdate, service);
     Kbdd_default_loop(display);
+#else
+    Kbdd_setDisplay(display);
+    Kbdd_setupUpdateCallback(onLayoutUpdate, service);
+    g_timeout_add(100, Kbdd_default_iter, mainloop);
+    g_main_loop_run(mainloop);
+//    Kbdd_default_loop(display);
 //    pthread_t thread1;
 //    pthread_create(  &thread1, NULL, Kbdd_default_loop, NULL);
 //    g_main_loop_run(mainloop);
 //    pthread_join(thread1, NULL);
-    Kbdd_clean();
 #endif
+    Kbdd_clean();
     return (EXIT_SUCCESS);
 }
 
