@@ -7,7 +7,6 @@ PKG_LDFLAGS := $(shell pkg-config --libs $(pkg_packages))
 
 ADD_CFLAGS := -g -Wall -DG_DISABLE_DEPRECATED
 # Only for testing purposes
-ADD_CFLAGS += -DNO_DAEMON
 
 CFLAGS  := $(PKG_CFLAGS) $(ADD_CFLAGS) $(CFLAGS)
 LDFLAGS := $(PKG_LDFLAGS) $(LDFLAGS)
@@ -25,7 +24,7 @@ cleanfiles := kbdd-service-glue.h \
 			  m-kbdd-service-marshal.h \
 			  m-kbdd-service-marshal.c
 
-targets = server
+targets = server.o
 
 .PHONY: all clean checkxml
 all: $(targets)
@@ -39,7 +38,7 @@ server: dbus-test.o server.o
 server.o: m-kbdd-service.c m-kbdd-service-marshal.o kbdd-service-glue.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-dbus-test.o: dbus-test.c 
+dbus-test.o: dbus-test.c server.o 
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 m-kbdd-service.o: m-kbdd-service.c
