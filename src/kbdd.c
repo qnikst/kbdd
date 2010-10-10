@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <getopt.h>
 
 #include <X11/Xlib.h>
 #include <errno.h>
@@ -31,6 +32,13 @@
 #include "common-defs.h"
 
 #define OPEN_MAX_GUESS 256
+
+static int flag_nodaemon;
+static int flag_help;
+
+// prototypes >>>
+void main_help();
+// <<< prototypes
 
 #ifdef ENABLE_DBUS
 MKbddService * service = NULL;
@@ -164,18 +172,61 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 
 int main(int argc, char * argv[])
 {
+    
+    {
+        int c;
+        static struct option long_options[] = 
+        {
+            { "nodaemon", no_argument, &flag_nodaemon, 1 },
+            { "help",     no_argument, &flag_help,   1 },
+            { "nodaemon", no_argument, 0, 'n' },
+            { "help",     no_argument, 0, 'h' },
+            { 0, 0, 0, 0}
+        };
 
-#ifndef NO_DAEMON
-#ifndef DAEMON
-    main_fork();
-#else
-    if ( daemon(0,0) != 0 ) {
-        perror("Failed to daemonize.\n");
+        while (1) 
+        {
+
+            int option_index = 0;
+            c = getopt_long(argc, argv, "nh",
+                    long_options, &option_index);
+
+            if ( c == -1 )
+                break;
+
+            switch ( c ) 
+            {
+                case 0:
+                    if ( long_options[option_index].flag != 0 ) 
+                        break;
+                case 'n':
+                    flag_nodaemon = 1;
+                    break;
+                case 'h':
+                    flag_help = 1;
+                    break;
+                default:
+                    main_help();
+                    exit( EXIT_FAILURE );
+            }
+        }
     }
-#endif
+
+    if ( flag_help ) 
+    {
+        main_help();
+        exit( EXIT_FAILURE );
+    }
+
+    if ( ! flag_nodaemon )
+    {
+#ifndef DAEMON
+        main_fork();
 #else
-    printf("Not daemonizing (build with NO_DAEMON-build define)\n");
+        if ( daemon(0,0) != 0 ) 
+            perror("Failed to daemonize.\n");
 #endif
+    }
 
 #ifdef ENABLE_DBUS
     g_type_init();
@@ -207,7 +258,13 @@ int main(int argc, char * argv[])
 //    pthread_join(thread1, NULL);
 #endif
     Kbdd_clean();
-    return (EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }
 
+void main_help()
+{
+    printf("usage: \n");
+    printf("\t n - start in nodeamon mode\n");
+    printf("\t n - print this help\n");
+}
 

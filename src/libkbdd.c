@@ -110,47 +110,49 @@ void Kbdd_setDisplay(Display * display)
 int Kbdd_default_iter(void * data)
 {
     assert( _display != NULL );
-    if ( ! XPending( _display ) ) return 1;
-    Window focused_win; 
-    XkbEvent ev; 
-    int revert;
-    uint32_t grp;
+    while ( XPending( _display ) ) 
+    {
+        Window focused_win; 
+        XkbEvent ev; 
+        int revert;
+        uint32_t grp;
 
-    XNextEvent(_display, &ev.core);
-    dbg( "LIBKBDD event caught\n");
-    if ( ev.type == _xkbEventType)
-    {
-       switch (ev.any.xkb_type)
-       {
-            case XkbStateNotify:
-                grp = ev.state.locked_group;
-                XGetInputFocus(_display, &focused_win, &revert);
-                Kbdd_update_window_layout( _display, focused_win,grp);
-                break;
-            default:
-                break;
-        }
-    } 
-    else 
-    {
-        switch (ev.type)
+        XNextEvent(_display, &ev.core);
+        dbg( "LIBKBDD event caught\n");
+        if ( ev.type == _xkbEventType)
         {
-            case DestroyNotify:
-                Kbdd_remove_window(ev.core.xdestroywindow.window);
-                break;
-            case CreateNotify:
-                Kbdd_add_window(_display, ev.core.xcreatewindow.window);
-                break;
-            case FocusIn:
-                XGetInputFocus(_display, &focused_win, &revert);
-                Kbdd_set_window_layout(_display, focused_win);
-                break;
-            case FocusOut:
-                XGetInputFocus(_display, &focused_win, &revert);
-                Kbdd_set_window_layout(_display, focused_win);
-            default:
-                XGetInputFocus(_display, &focused_win, &revert);
-                break;
+           switch (ev.any.xkb_type)
+           {
+                case XkbStateNotify:
+                    grp = ev.state.locked_group;
+                    XGetInputFocus(_display, &focused_win, &revert);
+                    Kbdd_update_window_layout( _display, focused_win,grp);
+                    break;
+                default:
+                    break;
+            }
+        } 
+        else 
+        {
+            switch (ev.type)
+            {
+                case DestroyNotify:
+                    Kbdd_remove_window(ev.core.xdestroywindow.window);
+                    break;
+                case CreateNotify:
+                    Kbdd_add_window(_display, ev.core.xcreatewindow.window);
+                    break;
+                case FocusIn:
+                    XGetInputFocus(_display, &focused_win, &revert);
+                    Kbdd_set_window_layout(_display, focused_win);
+                    break;
+                case FocusOut:
+                    XGetInputFocus(_display, &focused_win, &revert);
+                    Kbdd_set_window_layout(_display, focused_win);
+                default:
+                    XGetInputFocus(_display, &focused_win, &revert);
+                    break;
+            }
         }
     }
     return 1;
