@@ -24,16 +24,22 @@ AC_TYPE_PID_T
 
 AC_ARG_ENABLE([dbus], 
         AS_HELP_STRING([--enable-dbus], [Enable providing D-BUS object]),
-        AC_DEFINE([ENABLE_DBUS], $(enableval)), [Enable providing D-BUS object],
-        AC_DEFINE([ENABLE_DBUS], [yes], [Enable providing D-BUS object]))
+        [],
+        enableval=yes)
+if test x$enableval == xyes; then
+    AC_DEFINE([ENABLE_DBUS], [], [Enable providing d-bus object])
+fi
 
 
 # Checks for library functions.
 AC_FUNC_FORK
 AC_CHECK_FUNCS([strerror])
 
-PKG_CHECK_MODULES([GLIB], [glib-2.0])
+PKG_CHECK_MODULES([GLIB], [glib-2.0], [], [AC_MSG_ERROR([Glib not found])])
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 
+PKG_CHECK_MODULES([DBUSGLIB], [dbus-glib-1], [], [AC_MSG_ERROR([Dbus-glib not found])])
+AC_SUBST(DBUSGLIB_LIBS)
+AC_SUBST(DBUSGLIB_CFLAGS)
 AC_OUTPUT(Makefile src/Makefile)
