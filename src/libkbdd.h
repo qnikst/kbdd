@@ -1,10 +1,20 @@
-/*
- * vim:ts=4:expandtab
+/********************************************************************* 
+ * Kbdd - simple per-window-keyboard layout library and deamon 
+ * Copyright (C) 2010  Alexander V Vershilov and collaborators
  *
- * © 2010 Alexander Vershilov and contributors
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
  *
- * See file LICENSE for license information.
- */
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **********************************************************************/
 #ifndef _XKBDLIB_H_
 #define _XKBDLIB_H_
 
@@ -55,3 +65,4 @@ void Kbdd_initialize_listeners( Display * );
 void Kbdd_setDisplay(Display *);
 int Kbdd_default_iter(void *);
 #endif
+//vim:ts=4:expandtab
