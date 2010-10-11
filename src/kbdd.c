@@ -20,6 +20,10 @@
 #include <X11/Xlib.h>
 #include <errno.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef ENABLE_DBUS
 #include <pthread.h>
 #include <glib.h>
