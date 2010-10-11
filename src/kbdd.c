@@ -15,26 +15,40 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <getopt.h>
 
 #include <X11/Xlib.h>
 #include <errno.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef ENABLE_DBUS
+#include <pthread.h>
+#include <glib.h>
+#include <glib/gthread.h>
+#include "dbus/m-kbdd-service.h"
+#include "dbus/kbdd-service-glue.h"
+#endif
 
 #include "libkbdd.h"
+#include "common-defs.h"
 
 #define OPEN_MAX_GUESS 256
 
-int main_proc()
-{
-    Kbdd_init();
-    Display * display;
-    display = Kbdd_initialize_display();
-    Kbdd_initialize_listeners(display);
-    Kbdd_default_loop();
-    Kbdd_clean();
-    return 0;
-}
+static int flag_nodaemon;
+static int flag_help;
 
+// prototypes >>>
+void main_help();
+// <<< prototypes
+
+#ifdef ENABLE_DBUS
+MKbddService * service = NULL;
+DBusGConnection * bus  = NULL;
+DBusGProxy * proxy     = NULL;
+#endif
 
 int main_fork()
 {
@@ -75,17 +89,186 @@ int main_fork()
     stdioFD = open("/dev/null",O_RDWR);
     dup(stdioFD);
     dup(stdioFD);
-    //setpgrp();
     return 0;
 }
 
+#ifdef ENABLE_DBUS
+int dbus_init( ) {
+
+    char * request_ret = NULL;
+    unsigned int result;
+    GError * error = NULL;
+
+    /* Initialize the GType/GObject system */
+    g_type_init();
+
+
+    g_print(":main Connecting to the Session D-Bus.\n");
+    bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
+    if ( error != NULL ) 
+    {
+        fprintf(stderr,"Couldn't connect to session bus: %s\n",error->message);
+        exit (EXIT_FAILURE);
+    }
+
+    printf(":main Regiresting the well-known name (%s)\n", M_DBUS_KBDD_SERVICE);
+
+    /**
+     * In order to register a well-known name, we need to use the 
+     * "RequestMethod" of the /org/freedesktop/DBus interface. Each
+     * bus provides an object that will implement this interface
+     *
+     */
+    proxy = dbus_g_proxy_new_for_name(bus,
+                DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS);
+    if ( proxy == NULL) 
+    {
+        fprintf(stderr,"Failed to get a proxy for D-Bus\n");
+    }
+
+    //if (! org_freedesktop_DBus_request_name( proxy, M_DBUS_KBDD_SERVICE,
+    //            DBUS_NAME_FLAG_DO_NOT_QUEUE, &request_ret, &error) )
+    if (! dbus_g_proxy_call( proxy, 
+                "RequestName",
+                &error,
+                G_TYPE_STRING, M_DBUS_KBDD_SERVICE,
+                G_TYPE_UINT, 0,
+                G_TYPE_INVALID, 
+                G_TYPE_UINT, &result,
+                G_TYPE_INVALID))
+    {
+        fprintf(stderr, "Unable to register service: %s", error->message);
+        exit (EXIT_FAILURE);
+    }
+    printf(":main RequestName returned %s.\n", request_ret);
+    if ( result != 1 ) 
+    {
+        fprintf(stderr,"Failed to get the primary well-known name.\n");
+        exit (EXIT_FAILURE);
+    }
+
+    printf(":main Creating one MKbddService Object\n");
+
+    service = g_object_new(M_TYPE_KBDD_SERVICE, NULL);
+    if (service == NULL) 
+    {
+        fprintf(stderr,"Failed to create one KbddService instance\n");
+        exit (EXIT_FAILURE);
+    }
+
+    g_print(":main Registering project to D-Bus.\n");
+
+    dbus_g_object_type_install_info (M_TYPE_KBDD_SERVICE, &dbus_glib_m_kbdd_service_object_info);
+    dbus_g_connection_register_g_object(bus, M_DBUS_KBDD_SERVICE_PATH, G_OBJECT(service));
+
+    g_print("Ready to serve requests\n");
+    return 1;
+}
+
+
+void onLayoutUpdate(uint32_t layout, void * obj) 
+{
+    dbg(" EVENT LAYOUT CHANGED %u\n", layout);
+    m_kbdd_service_set_layout((MKbddService *)obj,layout);
+}
+#endif
 
 
 int main(int argc, char * argv[])
 {
-    main_fork();
-    main_proc();
-    return (EXIT_SUCCESS);
+    
+    {
+        int c;
+        static struct option long_options[] = 
+        {
+            { "nodaemon", no_argument, &flag_nodaemon, 1 },
+            { "help",     no_argument, &flag_help,   1 },
+            { "nodaemon", no_argument, 0, 'n' },
+            { "help",     no_argument, 0, 'h' },
+            { 0, 0, 0, 0}
+        };
+
+        while (1) 
+        {
+
+            int option_index = 0;
+            c = getopt_long(argc, argv, "nh",
+                    long_options, &option_index);
+
+            if ( c == -1 )
+                break;
+
+            switch ( c ) 
+            {
+                case 0:
+                    if ( long_options[option_index].flag != 0 ) 
+                        break;
+                case 'n':
+                    flag_nodaemon = 1;
+                    break;
+                case 'h':
+                    flag_help = 1;
+                    break;
+                default:
+                    main_help();
+                    exit( EXIT_FAILURE );
+            }
+        }
+    }
+
+    if ( flag_help ) 
+    {
+        main_help();
+        exit( EXIT_FAILURE );
+    }
+
+    if ( ! flag_nodaemon )
+    {
+#ifndef DAEMON
+        main_fork();
+#else
+        if ( daemon(0,0) != 0 ) 
+            perror("Failed to daemonize.\n");
+#endif
+    }
+
+#ifdef ENABLE_DBUS
+    g_type_init();
+    GMainLoop * mainloop = NULL;
+    mainloop = g_main_loop_new(NULL,FALSE);
+    if ( !g_thread_supported () ) {
+        dbg("gthread not supported  - initializing");
+        g_thread_init ( NULL );
+    }
+    dbus_g_thread_init ();
+    dbus_init();
+#endif
+
+    Kbdd_init();
+    Display * display;
+    display = Kbdd_initialize_display();
+    Kbdd_initialize_listeners(display);
+#ifndef ENABLE_DBUS
+    Kbdd_default_loop(display);
+#else
+    Kbdd_setDisplay(display);
+    Kbdd_setupUpdateCallback(onLayoutUpdate, service);
+    g_timeout_add(100, Kbdd_default_iter, mainloop);
+    g_main_loop_run(mainloop);
+//    Kbdd_default_loop(display);
+//    pthread_t thread1;
+//    pthread_create(  &thread1, NULL, Kbdd_default_loop, NULL);
+//    g_main_loop_run(mainloop);
+//    pthread_join(thread1, NULL);
+#endif
+    Kbdd_clean();
+    return EXIT_SUCCESS;
 }
 
+void main_help()
+{
+    printf("usage: \n");
+    printf("\t n - start in nodeamon mode\n");
+    printf("\t n - print this help\n");
+}
 

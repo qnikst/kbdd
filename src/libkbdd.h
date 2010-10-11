@@ -46,9 +46,12 @@ void Kbdd_setupUpdateCallback(UpdateCallback, void *);
 /**
  * default main loop that need to make xkbd working
  */
-void Kbdd_default_loop();
+void * Kbdd_default_loop();
 
 Display * Kbdd_initialize_display( );
 
 void Kbdd_initialize_listeners( Display * );
+
+void Kbdd_setDisplay(Display *);
+int Kbdd_default_iter(void *);
 #endif
