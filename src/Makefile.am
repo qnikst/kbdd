@@ -1,3 +1,4 @@
+SUBDIRS = dbus
 bin_PROGRAMS = kbdd
 kbdd_SOURCES = kbdd.c storage.c libkbdd.c
 kbdd_LDADD = $(GLIB_LIBS) $(X11_LIBS)
