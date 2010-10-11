@@ -1,14 +1,18 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([kbdd], [0.1], [qnikst@gentoo.ru])
+AC_INIT([kbdd], [0.2], [qnikst@gentoo.ru])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS(config.h)
 
 AM_INIT_AUTOMAKE([kbdd], [0.1])
+AC_SUBST(PACKAGE_URL, [http://github.com/qnikst/kbdd] )
+CFLAGS="$CFLAGS"
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_RANLIB
+DBUS_REQUIRED=0.60
 
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lX11':
@@ -39,7 +43,10 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0], [], [AC_MSG_ERROR([Glib not found])])
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 
+GLIB_GENMARSHAL=`$PKG_CONFIG glib-2.0 --variable=glib_genmarshal`
+AC_SUBST(GLIB_GENMARSHAL)
+
 PKG_CHECK_MODULES([DBUSGLIB], [dbus-glib-1], [], [AC_MSG_ERROR([Dbus-glib not found])])
 AC_SUBST(DBUSGLIB_LIBS)
 AC_SUBST(DBUSGLIB_CFLAGS)
-AC_OUTPUT(Makefile src/Makefile)
+AC_OUTPUT(Makefile src/Makefile src/dbus/Makefile)
