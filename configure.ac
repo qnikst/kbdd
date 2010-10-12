@@ -12,6 +12,7 @@ CFLAGS="$CFLAGS"
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_RANLIB
+AM_PROG_CC_C_O
 DBUS_REQUIRED=0.60
 
 # Checks for libraries.

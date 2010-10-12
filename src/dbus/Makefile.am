@@ -2,7 +2,7 @@ INCLUDES = $(PROG_CFLAGS)
 
 DBUS_PREFIX=m_kbdd_service
 
-m-kbdd-service-glue.h: $(INTERFACE_XML)
+kbdd-service-glue.h: $(INTERFACE_XML)
 	dbus-binding-tool --mode=glib-server --prefix=${DBUS_PREFIX} $< > $@
 
 m-kbdd-service-marshal.o: kbdd-marshal.list
@@ -20,8 +20,7 @@ noinst_HEADERS = $(BUILT_SOURCES)
 noinst_LIBRARIES = libkbdddbus.a
 libkbdddbus_a_SOURCES = m-kbdd-service.c m-kbdd-service-marshal.c
 
-
-BUILT_SOURCES = m-kbdd-service.c m-kbdd-service.h m-kbdd-service.c 
+BUILT_SOURCES = m-kbdd-service-marshal.o m-kbdd-service-marshal.c  kbdd-service-glue.h 
 AM_CFLAGS = $(GLIB_CFLAGS) $(DBUSGLIB_CFLAGS)
 
 CLEANFILES = $(BUILT_SOURCES) 
