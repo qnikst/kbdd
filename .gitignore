@@ -1,0 +1,7 @@
+Makefile
+/config.h
+/config.log
+/config.status
+/src/.deps/
+/src/dbus/.deps/
+/stamp-h1
