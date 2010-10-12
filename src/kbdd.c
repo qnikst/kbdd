@@ -93,8 +93,12 @@ int main_fork()
     umask(0);
 
     stdioFD = open("/dev/null",O_RDWR);
-    dup(stdioFD);
-    dup(stdioFD);
+    if ( ( dup(stdioFD) == -1 ) 
+            || ( dup(stdioFD) == -1) ) 
+    {
+        fprintf(stderr, "Error: unable to dup /dev/null\n");
+        exit(EXIT_FAILURE);
+    }
     return 0;
 }
 
