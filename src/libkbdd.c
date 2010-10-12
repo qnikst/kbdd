@@ -120,14 +120,14 @@ void Kbdd_setDisplay(Display * display)
 int Kbdd_default_iter(void * data)
 {
     assert( _display != NULL );
-    while ( XPending( _display ) ) 
+    while ( XPending( (Display *)_display ) ) 
     {
         Window focused_win; 
         XkbEvent ev; 
         int revert;
         uint32_t grp;
 
-        XNextEvent(_display, &ev.core);
+        XNextEvent( (Display *)_display, &ev.core);
         dbg( "LIBKBDD event caught\n");
         if ( ev.type == _xkbEventType)
         {
@@ -135,8 +135,8 @@ int Kbdd_default_iter(void * data)
            {
                 case XkbStateNotify:
                     grp = ev.state.locked_group;
-                    XGetInputFocus(_display, &focused_win, &revert);
-                    Kbdd_update_window_layout( _display, focused_win,grp);
+                    XGetInputFocus( (Display *)_display, &focused_win, &revert);
+                    Kbdd_update_window_layout( (Display *)_display, focused_win,grp);
                     break;
                 default:
                     break;
@@ -150,17 +150,17 @@ int Kbdd_default_iter(void * data)
                     Kbdd_remove_window(ev.core.xdestroywindow.window);
                     break;
                 case CreateNotify:
-                    Kbdd_add_window(_display, ev.core.xcreatewindow.window);
+                    Kbdd_add_window((Display *)_display, ev.core.xcreatewindow.window);
                     break;
                 case FocusIn:
-                    XGetInputFocus(_display, &focused_win, &revert);
-                    Kbdd_set_window_layout(_display, focused_win);
+                    XGetInputFocus((Display *)_display, &focused_win, &revert);
+                    Kbdd_set_window_layout((Display *)_display, focused_win);
                     break;
                 case FocusOut:
-                    XGetInputFocus(_display, &focused_win, &revert);
-                    Kbdd_set_window_layout(_display, focused_win);
+                    XGetInputFocus((Display *)_display, &focused_win, &revert);
+                    Kbdd_set_window_layout((Display *)_display, focused_win);
                 default:
-                    XGetInputFocus(_display, &focused_win, &revert);
+                    XGetInputFocus((Display *)_display, &focused_win, &revert);
                     break;
             }
         }
@@ -172,7 +172,7 @@ void * Kbdd_default_loop(Display * display)
 {
     dbg( "default loop started\n");
     if (display == NULL)
-        display = _display;
+        display = (Display *)_display;
     assert(display!=NULL);
 
     Window focused_win;
