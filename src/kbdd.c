@@ -45,9 +45,11 @@
 
 static int flag_nodaemon;
 static int flag_help;
+static int flag_version;
 
 // prototypes >>>
 void main_help();
+void main_version();
 // <<< prototypes
 
 #ifdef ENABLE_DBUS
@@ -183,7 +185,6 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 }
 #endif
 
-
 int main(int argc, char * argv[])
 {
     
@@ -195,6 +196,7 @@ int main(int argc, char * argv[])
             { "help",     no_argument, &flag_help,   1 },
             { "nodaemon", no_argument, 0, 'n' },
             { "help",     no_argument, 0, 'h' },
+            { "version",  no_argument, &flag_version, 1},
             { 0, 0, 0, 0}
         };
 
@@ -202,7 +204,7 @@ int main(int argc, char * argv[])
         {
 
             int option_index = 0;
-            c = getopt_long(argc, argv, "nh",
+            c = getopt_long(argc, argv, "nhv",
                     long_options, &option_index);
 
             if ( c == -1 )
@@ -219,11 +221,20 @@ int main(int argc, char * argv[])
                 case 'h':
                     flag_help = 1;
                     break;
+                case 'v':
+                    flag_version=1;
+                    break;
                 default:
                     main_help();
                     exit( EXIT_FAILURE );
             }
         }
+    }
+
+    if ( flag_version ) 
+    {
+        main_version();
+        exit( EXIT_SUCCESS );
     }
 
     if ( flag_help ) 
@@ -277,9 +288,17 @@ int main(int argc, char * argv[])
 
 void main_help()
 {
-    printf("usage: \n");
+    printf("KBDD very simple layout switcher\n");
+    printf("Usage: \n");
+    printf("\tkbdd [-n]                   - start kbdd\n");
+    printf("\tkbdd [-h] [-v] [--version]  - print info message\nOptions:\n");
     printf("\t n - start in nodeamon mode\n");
-    printf("\t n - print this help\n");
+    printf("\t h - print this help\n");
+}
+
+void main_version()
+{
+    printf("kbdd " VERSION ", see -h/--help for brief info\n");
 }
 
 //vim:ts=4:expandtab 
