@@ -80,6 +80,8 @@ void Kbdd_update_window_layout ( Display * display, Window window, unsigned char
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
     _kbdd_storage_put(win, g);
+    if ( _updateCallback != NULL ) 
+        _updateCallback(g, (void *)_updateUserdata);
 }
 
 Display * Kbdd_initialize_display( )
