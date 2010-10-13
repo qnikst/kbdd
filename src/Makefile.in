@@ -33,6 +33,8 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = kbdd$(EXEEXT)
+@BUILD_DBUS_TRUE@am__append_1 = $(DBUSGLIB_LIBS) dbus/libkbdddbus.a
+@BUILD_DBUS_TRUE@am__append_2 = $(DBUSGLIB_CFLAGS)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -48,8 +50,10 @@ PROGRAMS = $(bin_PROGRAMS)
 am_kbdd_OBJECTS = kbdd.$(OBJEXT) storage.$(OBJEXT) libkbdd.$(OBJEXT)
 kbdd_OBJECTS = $(am_kbdd_OBJECTS)
 am__DEPENDENCIES_1 =
+@BUILD_DBUS_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) \
+@BUILD_DBUS_TRUE@	dbus/libkbdddbus.a
 kbdd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) dbus/libkbdddbus.a
+	$(am__DEPENDENCIES_2)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -74,7 +78,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = dbus
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
   dir0=`pwd`; \
@@ -154,6 +158,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+X11_CFLAGS = @X11_CFLAGS@
 X11_LIBS = @X11_LIBS@
 XMKMF = @XMKMF@
 abs_builddir = @abs_builddir@
@@ -198,10 +203,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = dbus
+@BUILD_DBUS_TRUE@SUBDIRS = dbus
 kbdd_SOURCES = kbdd.c storage.c libkbdd.c
-kbdd_LDADD = $(GLIB_LIBS) $(DBUSGLIB_LIBS) $(X11_LIBS) dbus/libkbdddbus.a
-AM_CFLAGS = $(GLIB_CFLAGS) $(DBUSGLIB_CFLAGS) -DSTORAGE_GHASH -Idbus/
+kbdd_LDADD = $(GLIB_LIBS) $(X11_LIBS) $(am__append_1)
+AM_CFLAGS = $(GLIB_CFLAGS) $(DBUSGLIB_CFLAGS) -DSTORAGE_GHASH -Idbus/ \
+	$(am__append_2)
 all: all-recursive
 
 .SUFFIXES:
