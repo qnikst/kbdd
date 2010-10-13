@@ -276,11 +276,6 @@ int main(int argc, char * argv[])
     Kbdd_setupUpdateCallback(onLayoutUpdate, service);
     g_timeout_add(100, Kbdd_default_iter, mainloop);
     g_main_loop_run(mainloop);
-//    Kbdd_default_loop(display);
-//    pthread_t thread1;
-//    pthread_create(  &thread1, NULL, Kbdd_default_loop, NULL);
-//    g_main_loop_run(mainloop);
-//    pthread_join(thread1, NULL);
 #endif
     Kbdd_clean();
     return EXIT_SUCCESS;
