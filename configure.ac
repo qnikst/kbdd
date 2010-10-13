@@ -12,9 +12,12 @@ AC_SUBST(PACKAGE_URL, [http://github.com/qnikst/kbdd] )
 AC_PROG_CC
 AC_PROG_RANLIB
 
+#check for pkg-config
+PKG_PROG_PKG_CONFIG
+
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lX11':
-AC_CHECK_LIB([X11], [XNextEvent], [X11_LIBS=[-lX11]], [AC_MSG_ERROR([libX11 not found])])
+PKG_CHECK_MODULES(X11, x11, [], [AC_MSG_ERROR([libX11 not found])])
 AC_SUBST(X11_LIBS)
 
 # Checks for header files.
@@ -30,7 +33,16 @@ AC_ARG_ENABLE([dbus],
         enableval=yes)
 if test x$enableval == xyes; then
     AC_DEFINE([ENABLE_DBUS], [], [Enable providing d-bus object])
+
+    #Check for dbus-glib
+    GLIB_GENMARSHAL=`$PKG_CONFIG glib-2.0 --variable=glib_genmarshal`
+    AC_SUBST(GLIB_GENMARSHAL)
+    
+    PKG_CHECK_MODULES([DBUSGLIB], [dbus-glib-1 >= 0.60], [], [AC_MSG_ERROR([Dbus-glib not found])])
+    AC_SUBST(DBUSGLIB_LIBS)
+    AC_SUBST(DBUSGLIB_CFLAGS)
 fi
+AM_CONDITIONAL(BUILD_DBUS, test x$enableval == xyes)
 
 
 AC_ARG_ENABLE([debug],
@@ -45,15 +57,9 @@ fi
 AC_FUNC_FORK
 AC_CHECK_FUNCS([strerror])
 
+#check for Glib
 PKG_CHECK_MODULES([GLIB], [glib-2.0], [], [AC_MSG_ERROR([Glib not found])])
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
-
-GLIB_GENMARSHAL=`$PKG_CONFIG glib-2.0 --variable=glib_genmarshal`
-AC_SUBST(GLIB_GENMARSHAL)
-
-PKG_CHECK_MODULES([DBUSGLIB], [dbus-glib-1 >= 0.60], [], [AC_MSG_ERROR([Dbus-glib not found])])
-AC_SUBST(DBUSGLIB_LIBS)
-AC_SUBST(DBUSGLIB_CFLAGS)
 
 AC_OUTPUT(Makefile src/Makefile src/dbus/Makefile)
