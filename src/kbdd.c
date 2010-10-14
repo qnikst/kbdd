@@ -44,8 +44,6 @@
 #define OPEN_MAX_GUESS 256
 
 static int flag_nodaemon;
-static int flag_help;
-static int flag_version;
 
 // prototypes >>>
 void main_help();
@@ -188,7 +186,15 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 int main(int argc, char * argv[])
 {
     
+    /**
+     * get options part
+     *  -h / --help     -- help message
+     *  -v / --version  -- version message
+     *  -n / --nodaemon -- start in normal mode
+     */
     {
+        int flag_help;
+        int flag_version;
         int c;
         static struct option long_options[] = 
         {
@@ -229,19 +235,14 @@ int main(int argc, char * argv[])
                     exit( EXIT_FAILURE );
             }
         }
+
+        if ( flag_version ) 
+            main_version();
+
+        if ( flag_help )
+            main_help();
     }
 
-    if ( flag_version ) 
-    {
-        main_version();
-        exit( EXIT_SUCCESS );
-    }
-
-    if ( flag_help ) 
-    {
-        main_help();
-        exit( EXIT_FAILURE );
-    }
 
     if ( ! flag_nodaemon )
     {
@@ -287,8 +288,9 @@ void main_help()
     printf("Usage: \n");
     printf("\tkbdd [-n]                   - start kbdd\n");
     printf("\tkbdd [-h] [-v] [--version]  - print info message\nOptions:\n");
-    printf("\t n - start in nodeamon mode\n");
-    printf("\t h - print this help\n");
+    printf("\t -n --nodaemon - start in nodaemon mode\n");
+    printf("\t -h --help     - print this help\n");
+    printf("\t -v --version  - show version\n");
 }
 
 void main_version()
