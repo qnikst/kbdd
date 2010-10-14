@@ -193,8 +193,8 @@ int main(int argc, char * argv[])
      *  -n / --nodaemon -- start in normal mode
      */
     {
-        int flag_help;
-        int flag_version;
+        static int flag_help;
+        static int flag_version;
         int c;
         static struct option long_options[] = 
         {
@@ -236,11 +236,15 @@ int main(int argc, char * argv[])
             }
         }
 
-        if ( flag_version ) 
+        if ( flag_version ) {
             main_version();
+            exit( EXIT_SUCCESS );
+        }
 
-        if ( flag_help )
+        if ( flag_help ) {
             main_help();
+            exit( EXIT_FAILURE );
+        }
     }
 
 
