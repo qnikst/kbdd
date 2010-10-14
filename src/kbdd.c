@@ -44,10 +44,10 @@
 #define OPEN_MAX_GUESS 256
 
 static int flag_nodaemon;
-static int flag_help;
 
 // prototypes >>>
 void main_help();
+void main_version();
 // <<< prototypes
 
 #ifdef ENABLE_DBUS
@@ -183,11 +183,18 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 }
 #endif
 
-
 int main(int argc, char * argv[])
 {
     
+    /**
+     * get options part
+     *  -h / --help     -- help message
+     *  -v / --version  -- version message
+     *  -n / --nodaemon -- start in normal mode
+     */
     {
+        int flag_help;
+        int flag_version;
         int c;
         static struct option long_options[] = 
         {
@@ -195,6 +202,7 @@ int main(int argc, char * argv[])
             { "help",     no_argument, &flag_help,   1 },
             { "nodaemon", no_argument, 0, 'n' },
             { "help",     no_argument, 0, 'h' },
+            { "version",  no_argument, &flag_version, 1},
             { 0, 0, 0, 0}
         };
 
@@ -202,7 +210,7 @@ int main(int argc, char * argv[])
         {
 
             int option_index = 0;
-            c = getopt_long(argc, argv, "nh",
+            c = getopt_long(argc, argv, "nhv",
                     long_options, &option_index);
 
             if ( c == -1 )
@@ -219,18 +227,22 @@ int main(int argc, char * argv[])
                 case 'h':
                     flag_help = 1;
                     break;
+                case 'v':
+                    flag_version=1;
+                    break;
                 default:
                     main_help();
                     exit( EXIT_FAILURE );
             }
         }
+
+        if ( flag_version ) 
+            main_version();
+
+        if ( flag_help )
+            main_help();
     }
 
-    if ( flag_help ) 
-    {
-        main_help();
-        exit( EXIT_FAILURE );
-    }
 
     if ( ! flag_nodaemon )
     {
@@ -265,11 +277,6 @@ int main(int argc, char * argv[])
     Kbdd_setupUpdateCallback(onLayoutUpdate, service);
     g_timeout_add(100, Kbdd_default_iter, mainloop);
     g_main_loop_run(mainloop);
-//    Kbdd_default_loop(display);
-//    pthread_t thread1;
-//    pthread_create(  &thread1, NULL, Kbdd_default_loop, NULL);
-//    g_main_loop_run(mainloop);
-//    pthread_join(thread1, NULL);
 #endif
     Kbdd_clean();
     return EXIT_SUCCESS;
@@ -277,9 +284,18 @@ int main(int argc, char * argv[])
 
 void main_help()
 {
-    printf("usage: \n");
-    printf("\t n - start in nodeamon mode\n");
-    printf("\t n - print this help\n");
+    printf("KBDD very simple layout switcher\n");
+    printf("Usage: \n");
+    printf("\tkbdd [-n]                   - start kbdd\n");
+    printf("\tkbdd [-h] [-v] [--version]  - print info message\nOptions:\n");
+    printf("\t -n --nodaemon - start in nodaemon mode\n");
+    printf("\t -h --help     - print this help\n");
+    printf("\t -v --version  - show version\n");
+}
+
+void main_version()
+{
+    printf("kbdd " VERSION ", see -h/--help for brief info\n");
 }
 
 //vim:ts=4:expandtab 

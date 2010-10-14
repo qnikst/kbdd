@@ -1,5 +1,8 @@
 DBUS_PREFIX=m_kbdd_service
 
+interfacesdir = $(datadir)/dbus-1/interfaces
+interfaces_DATA = $(INTERFACE_XML)
+
 kbdd-service-glue.h: $(INTERFACE_XML)
 	dbus-binding-tool --mode=glib-server --prefix=${DBUS_PREFIX} $< > $@
 
