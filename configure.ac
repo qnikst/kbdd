@@ -52,7 +52,7 @@ AC_ARG_ENABLE([debug],
         AS_HELP_STRING([--enable-debug], [Enable verbose output]),
         [],
         enableval=no)
-if test 'x$enableval' == 'xyes'; then
+if test "x$enableval" == 'xyes'; then
     AC_DEFINE([DEBUG], [], [Enable verbose mode]),
 fi
 

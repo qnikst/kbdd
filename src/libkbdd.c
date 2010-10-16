@@ -27,14 +27,38 @@
 #include "libkbdd.h"
 #include "common-defs.h"
 
+//>>prototypes
+__inline__ void _inner_iter(Display * display);
+__inline__ void _on_createEvent(XCreateWindowEvent ev);
+__inline__ void _on_destroyEvent(XDestroyWindowEvent ev);
+__inline__ void _on_propertyEvent(XPropertyEvent ev);
+__inline__ void _on_focusEvent(XFocusChangeEvent ev);
+//<<prototypes
+
+typedef struct _KbddStructure {
+    long w_events;
+    long root_events;
+} KbddStructure;
+
 volatile int _xkbEventType;
 volatile UpdateCallback    _updateCallback = NULL;
 volatile void *            _updateUserdata = NULL;
 volatile static Display *  _display        = NULL;
 
+static KbddStructure       _kbdd;
+
 void Kbdd_init()
 {
     _kbdd_storage_init(); 
+    _kbdd.w_events = EnterWindowMask 
+                   | FocusChangeMask
+                   | PropertyChangeMask
+                   | StructureNotifyMask;
+    _kbdd.root_events = StructureNotifyMask
+                      | SubstructureNotifyMask
+                      | PropertyChangeMask
+                      | EnterWindowMask
+                      | FocusChangeMask;
 }
 
 void Kbdd_clean()
@@ -42,6 +66,175 @@ void Kbdd_clean()
     _kbdd_storage_free();
 }
 
+Display * 
+Kbdd_initialize_display( )
+{
+    Display * display;
+    int xkbEventType,xkbError,  reason_rtrn;
+    char * display_name = NULL;
+    int mjr = XkbMajorVersion;
+    int mnr = XkbMinorVersion;
+    display = XkbOpenDisplay(display_name,&xkbEventType,&xkbError, &mjr,&mnr,&reason_rtrn);
+    _xkbEventType = xkbEventType;
+    return display;
+}
+
+void 
+Kbdd_setupUpdateCallback(UpdateCallback callback,void * userData ) 
+{
+    _updateCallback = callback;
+    _updateUserdata = userData;
+}
+
+void Kbdd_initialize_listeners( Display * display )
+{
+    dbg("Kbdd_initialize_listeners\n");
+    assert(display!=NULL);
+    int scr = DefaultScreen( display );
+    Window root_win = RootWindow( display, scr );
+    dbg("attating to window %u\n",root_win);
+    XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
+                XkbAllStateComponentsMask, XkbGroupStateMask);
+    XSelectInput( display, root_win, _kbdd.root_events);
+}
+
+void Kbdd_setDisplay(Display * display)
+{
+    assert(display != NULL);
+    _display = display;
+}
+
+
+/**
+ * Default iteration of catching Xorg events
+ */
+int 
+Kbdd_default_iter(void * data)
+{
+    assert( _display != NULL );
+    while ( XPending( (Display *)_display ) ) 
+        _inner_iter((Display *)_display);
+    return 1;
+}
+
+/**
+ * Default loop for catching Xorg events
+ */
+void * 
+Kbdd_default_loop(Display * display) 
+{
+    dbg( "default loop started\n");
+    if (display == NULL)
+        display = (Display *)_display;
+    assert(display!=NULL);
+
+    while ( 1 ) 
+        _inner_iter((Display *)display);
+}
+
+__inline__
+void _inner_iter(Display * display)
+{
+    assert(display != NULL);
+    Window focused_win;
+    XkbEvent ev;
+    int revert;
+    uint32_t grp;
+    XNextEvent( display, &ev.core);
+    if ( ev.type == _xkbEventType )
+    {
+        switch (ev.any.xkb_type)
+        {
+            case XkbStateNotify:
+                dbg( "LIBKBDD state notify event\n");
+                grp = ev.state.locked_group;
+                XGetInputFocus( display, &focused_win, &revert);
+                Kbdd_update_window_layout( display, focused_win,grp);
+                break;
+            default:
+                dbg("kbdnotify %u\n",ev.any.xkb_type);
+                break;
+        }
+    }
+    else 
+    {
+        switch (ev.type)
+        {
+            case DestroyNotify:
+                _on_destroyEvent(ev.core.xdestroywindow);
+                break;
+            case CreateNotify:
+                _on_createEvent(ev.core.xcreatewindow);
+                break;
+            case FocusIn:
+            case FocusOut:
+                _on_focusEvent(ev.core.xfocus);
+                break;
+            case EnterNotify:
+                dbg( "LIBKBDD Enter event\n");
+                break;
+            case PropertyNotify:
+                _on_propertyEvent(ev.core.xproperty);
+                dbg("Property change notify\n");
+                break;
+            default:
+                dbg( "LIBKBDD default %u\n", ev.type);
+                XGetInputFocus(display, &focused_win, &revert);
+                break;
+        }
+    }
+}
+
+/**
+ *  X11 Events actions
+ *  
+ *  here we add an additional actions for X11 events
+ *
+ *
+ *
+ */
+__inline__ void 
+_on_createEvent(XCreateWindowEvent ev )
+{
+    dbg("start\n");
+    assert(ev.display != NULL);
+    XSelectInput( ev.display, ev.window, _kbdd.w_events);
+    //we can set parent window layout or default layout
+    //if we use ev.parent 
+    Kbdd_add_window(ev.display, ev.window);
+}
+
+__inline__ void 
+_on_destroyEvent(XDestroyWindowEvent ev)
+{
+    dbg( "LIBKBDD destroy notify event\n");
+    Kbdd_remove_window(ev.window);
+}
+
+__inline__ void
+_on_propertyEvent(XPropertyEvent ev) 
+{
+    dbg("start");
+    dbg("window id %i\n",ev.window);
+    Kbdd_set_window_layout(ev.display, ev.window);
+}
+
+__inline__ void
+_on_focusEvent(XFocusChangeEvent ev)
+{
+    Window focused_win;
+    int revert;
+    dbg( "LIBKBDD Focus out");
+    dbg("window id %i", ev.window);
+    XGetInputFocus(ev.display, &focused_win, &revert);
+    dbg("window real %i", focused_win);
+    dbg("===========================");
+    Kbdd_set_window_layout(ev.display, focused_win);
+
+}
+/**
+ * Kbbdd inner actions
+ */
 int Kbdd_add_window(Display * display, Window window)
 {
     XkbStateRec state;
@@ -72,157 +265,11 @@ int Kbdd_set_window_layout ( Display * display, Window win )
 
 void Kbdd_update_window_layout ( Display * display, Window window, unsigned char grp ) 
 {
-//    XkbStateRec state;
-//    if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success )
-//    {
-//      _kbdd_storage_put(win, state.group);
-//    }
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
     _kbdd_storage_put(win, g);
     if ( _updateCallback != NULL ) 
         _updateCallback(g, (void *)_updateUserdata);
 }
-
-Display * Kbdd_initialize_display( )
-{
-    Display * display;
-    int xkbEventType,xkbError,  reason_rtrn;
-    char * display_name = NULL;
-    int mjr = XkbMajorVersion;
-    int mnr = XkbMinorVersion;
-    display = XkbOpenDisplay(display_name,&xkbEventType,&xkbError, &mjr,&mnr,&reason_rtrn);
-    _xkbEventType = xkbEventType;
-    return display;
-}
-
-void Kbdd_setupUpdateCallback(UpdateCallback callback,void * userData ) 
-{
-    _updateCallback = callback;
-    _updateUserdata = userData;
-}
-
-void Kbdd_initialize_listeners( Display * display )
-{
-    assert(display!=NULL);
-    int scr = DefaultScreen( display );
-    Window root_win = RootWindow( display, scr );
-    XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
-                XkbAllStateComponentsMask, XkbGroupStateMask);
-    XSelectInput( display, root_win, StructureNotifyMask | SubstructureNotifyMask
-            | EnterWindowMask | FocusChangeMask | LeaveWindowMask );
-}
-
-void Kbdd_setDisplay(Display * display)
-{
-    assert(display != NULL);
-    _display = display;
-}
-
-int Kbdd_default_iter(void * data)
-{
-    assert( _display != NULL );
-    while ( XPending( (Display *)_display ) ) 
-    {
-        Window focused_win; 
-        XkbEvent ev; 
-        int revert;
-        uint32_t grp;
-
-        XNextEvent( (Display *)_display, &ev.core);
-        dbg( "LIBKBDD event caught\n");
-        if ( ev.type == _xkbEventType)
-        {
-           switch (ev.any.xkb_type)
-           {
-                case XkbStateNotify:
-                    grp = ev.state.locked_group;
-                    XGetInputFocus( (Display *)_display, &focused_win, &revert);
-                    Kbdd_update_window_layout( (Display *)_display, focused_win,grp);
-                    break;
-                default:
-                    break;
-            }
-        } 
-        else 
-        {
-            switch (ev.type)
-            {
-                case DestroyNotify:
-                    Kbdd_remove_window(ev.core.xdestroywindow.window);
-                    break;
-                case CreateNotify:
-                    Kbdd_add_window((Display *)_display, ev.core.xcreatewindow.window);
-                    break;
-                case FocusIn:
-                    XGetInputFocus((Display *)_display, &focused_win, &revert);
-                    Kbdd_set_window_layout((Display *)_display, focused_win);
-                    break;
-                case FocusOut:
-                    XGetInputFocus((Display *)_display, &focused_win, &revert);
-                    Kbdd_set_window_layout((Display *)_display, focused_win);
-                default:
-                    XGetInputFocus((Display *)_display, &focused_win, &revert);
-                    break;
-            }
-        }
-    }
-    return 1;
-}
-
-void * Kbdd_default_loop(Display * display) 
-{
-    dbg( "default loop started\n");
-    if (display == NULL)
-        display = (Display *)_display;
-    assert(display!=NULL);
-
-    Window focused_win;
-    int revert;
-    unsigned char grp;
-    XkbEvent ev; 
-    while ( 1 ) 
-    {
-        XNextEvent(display, &ev.core);
-        dbg( "LIBKBDD event caught\n");
-        if ( ev.type == _xkbEventType)
-        {
-            switch (ev.any.xkb_type)
-            {
-                case XkbStateNotify:
-                    grp = ev.state.locked_group;
-                    XGetInputFocus(display, &focused_win, &revert);
-                    Kbdd_update_window_layout( display, focused_win,grp);
-                    break;
-                default:
-                    break;
-            }
-        } 
-        else 
-        {
-            switch (ev.type)
-            {
-                case DestroyNotify:
-                    Kbdd_remove_window(ev.core.xdestroywindow.window);
-                    break;
-                case CreateNotify:
-                    Kbdd_add_window(display, ev.core.xcreatewindow.window);
-                    break;
-                case FocusIn:
-                    XGetInputFocus(display, &focused_win, &revert);
-                    Kbdd_set_window_layout(display, focused_win);
-                    break;
-                case FocusOut:
-                    XGetInputFocus(display, &focused_win, &revert);
-                    Kbdd_set_window_layout(display, focused_win);
-                default:
-                    XGetInputFocus(display, &focused_win, &revert);
-                    break;
-            }
-        }
-
-    }
-}
-
 //vim:ts=4:expandtab
 
