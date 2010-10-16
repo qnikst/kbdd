@@ -185,6 +185,7 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 
 int main(int argc, char * argv[])
 {
+    dbg("kbdd starting WITH debug");
     
     /**
      * get options part

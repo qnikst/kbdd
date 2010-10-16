@@ -15,23 +15,26 @@ AC_PROG_RANLIB
 #check for pkg-config
 PKG_PROG_PKG_CONFIG
 
+# Checks for header files.
+AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h unistd.h])
+AC_PATH_X
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_PID_T
+
+# Checks for library functions.
+AC_CHECK_FUNCS([strerror])
+
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lX11':
 PKG_CHECK_MODULES(X11, x11, [], [AC_MSG_ERROR([libX11 not found])])
 AC_SUBST(X11_LIBS)
 
-# Checks for header files.
-AC_PATH_X
-AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h unistd.h])
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_TYPE_PID_T
-
 AC_ARG_ENABLE([dbus], 
         AS_HELP_STRING([--enable-dbus], [Enable providing D-BUS object]),
         [],
         enableval=yes)
-if test x$enableval == xyes; then
+if test 'x$enableval' == 'xyes'; then
     AC_DEFINE([ENABLE_DBUS], [], [Enable providing d-bus object])
 
     #Check for dbus-glib
@@ -42,20 +45,16 @@ if test x$enableval == xyes; then
     AC_SUBST(DBUSGLIB_LIBS)
     AC_SUBST(DBUSGLIB_CFLAGS)
 fi
-AM_CONDITIONAL(BUILD_DBUS, test x$enableval == xyes)
+AM_CONDITIONAL(BUILD_DBUS, test 'x$enableval' == 'xyes')
 
 
 AC_ARG_ENABLE([debug],
         AS_HELP_STRING([--enable-debug], [Enable verbose output]),
         [],
         enableval=no)
-if test x$enableval == xyes; then
+if test "x$enableval" == 'xyes'; then
     AC_DEFINE([DEBUG], [], [Enable verbose mode]),
 fi
-
-# Checks for library functions.
-AC_FUNC_FORK
-AC_CHECK_FUNCS([strerror])
 
 #check for Glib
 PKG_CHECK_MODULES([GLIB], [glib-2.0], [], [AC_MSG_ERROR([Glib not found])])

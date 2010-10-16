@@ -20,8 +20,8 @@
  **********************************************************************/
 
 // common settings for all KBDD source files
-#ifndef PACKAGE_NAME
-#define PACKAGE_NAME "KBDD"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
 
 #ifdef DEBUG
