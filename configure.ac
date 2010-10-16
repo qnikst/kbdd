@@ -34,7 +34,7 @@ AC_ARG_ENABLE([dbus],
         AS_HELP_STRING([--enable-dbus], [Enable providing D-BUS object]),
         [],
         enableval=yes)
-if test 'x$enableval' == 'xyes'; then
+if test "x$enableval" == 'xyes'; then
     AC_DEFINE([ENABLE_DBUS], [], [Enable providing d-bus object])
 
     #Check for dbus-glib
