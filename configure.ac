@@ -45,7 +45,7 @@ if test "x$enableval" == 'xyes'; then
     AC_SUBST(DBUSGLIB_LIBS)
     AC_SUBST(DBUSGLIB_CFLAGS)
 fi
-AM_CONDITIONAL(BUILD_DBUS, test 'x$enableval' == 'xyes')
+AM_CONDITIONAL(BUILD_DBUS, test "x$enableval" == 'xyes')
 
 
 AC_ARG_ENABLE([debug],
