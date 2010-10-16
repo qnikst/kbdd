@@ -33,6 +33,7 @@ __inline__ void _on_createEvent(XCreateWindowEvent ev);
 __inline__ void _on_destroyEvent(XDestroyWindowEvent ev);
 __inline__ void _on_propertyEvent(XPropertyEvent ev);
 __inline__ void _on_focusEvent(XFocusChangeEvent ev);
+__inline__ void _on_xkbEvent(XkbEvent ev);
 //<<prototypes
 
 typedef struct _KbddStructure {
@@ -47,13 +48,20 @@ volatile static Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
 
-void Kbdd_init()
+/**
+ * Interface part
+ *
+ */
+
+void 
+Kbdd_init()
 {
     _kbdd_storage_init(); 
     _kbdd.w_events = EnterWindowMask 
                    | FocusChangeMask
                    | PropertyChangeMask
-                   | StructureNotifyMask;
+                   | StructureNotifyMask
+                   | SubstructureNotifyMask;
     _kbdd.root_events = StructureNotifyMask
                       | SubstructureNotifyMask
                       | PropertyChangeMask
@@ -61,7 +69,8 @@ void Kbdd_init()
                       | FocusChangeMask;
 }
 
-void Kbdd_clean()
+void 
+Kbdd_clean()
 {
     _kbdd_storage_free();
 }
@@ -143,18 +152,7 @@ void _inner_iter(Display * display)
     XNextEvent( display, &ev.core);
     if ( ev.type == _xkbEventType )
     {
-        switch (ev.any.xkb_type)
-        {
-            case XkbStateNotify:
-                dbg( "LIBKBDD state notify event\n");
-                grp = ev.state.locked_group;
-                XGetInputFocus( display, &focused_win, &revert);
-                Kbdd_update_window_layout( display, focused_win,grp);
-                break;
-            default:
-                dbg("kbdnotify %u\n",ev.any.xkb_type);
-                break;
-        }
+        _on_xkbEvent(ev);
     }
     else 
     {
@@ -216,7 +214,11 @@ _on_propertyEvent(XPropertyEvent ev)
 {
     dbg("start");
     dbg("window id %i\n",ev.window);
-    Kbdd_set_window_layout(ev.display, ev.window);
+    Window focused_win;
+    int revert;
+    XGetInputFocus(ev.display, &focused_win, &revert);
+    Kbdd_set_window_layout(ev.display, focused_win);
+//    Kbdd_set_window_layout(ev.display, ev.window);
 }
 
 __inline__ void
@@ -231,6 +233,27 @@ _on_focusEvent(XFocusChangeEvent ev)
     dbg("===========================");
     Kbdd_set_window_layout(ev.display, focused_win);
 
+}
+
+
+__inline__ void
+_on_xkbEvent(XkbEvent ev)
+{
+    Window focused_win;
+    int revert;
+    uint32_t grp;
+    switch (ev.any.xkb_type)
+    {
+        case XkbStateNotify:
+            dbg( "LIBKBDD state notify event\n");
+            grp = ev.state.group;
+            XGetInputFocus( ev.any.display, &focused_win, &revert);
+            Kbdd_update_window_layout( ev.any.display, focused_win,grp);
+            break;
+        default:
+            dbg("kbdnotify %u\n",ev.any.xkb_type);
+            break;
+    }
 }
 /**
  * Kbbdd inner actions
