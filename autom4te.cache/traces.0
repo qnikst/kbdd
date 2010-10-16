@@ -851,7 +851,7 @@ m4trace:configure.ac:44: -1- PKG_CHECK_EXISTS([dbus-glib-1 >= 0.60], [pkg_cv_[]D
 m4trace:configure.ac:44: -1- _PKG_SHORT_ERRORS_SUPPORTED
 m4trace:configure.ac:45: -1- m4_pattern_allow([^DBUSGLIB_LIBS$])
 m4trace:configure.ac:46: -1- m4_pattern_allow([^DBUSGLIB_CFLAGS$])
-m4trace:configure.ac:48: -1- AM_CONDITIONAL([BUILD_DBUS], [test 'x$enableval' == 'xyes'])
+m4trace:configure.ac:48: -1- AM_CONDITIONAL([BUILD_DBUS], [test "x$enableval" == 'xyes'])
 m4trace:configure.ac:48: -1- m4_pattern_allow([^BUILD_DBUS_TRUE$])
 m4trace:configure.ac:48: -1- m4_pattern_allow([^BUILD_DBUS_FALSE$])
 m4trace:configure.ac:48: -1- _AM_SUBST_NOTMAKE([BUILD_DBUS_TRUE])
