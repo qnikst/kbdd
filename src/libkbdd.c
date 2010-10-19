@@ -88,7 +88,7 @@ Kbdd_init()
                       | EnterWindowMask
                       | FocusChangeMask;
     
-    _kbdd.forceAssign = 1;
+    _kbdd.forceAssign = 0;
 
     _kbdd_storage_init(); //initialize per-window storage
 }
@@ -220,6 +220,7 @@ static void
 _on_propertyEvent(XEvent *e) 
 {
     XPropertyEvent * ev = &e->xproperty;
+    if (ev->state==0) return;
     int revert;
     Window focused_win;
     XGetInputFocus(ev->display, &focused_win, &revert);
@@ -273,6 +274,8 @@ _on_xkbEvent(XkbEvent ev)
  */
 void _assign_window(Display * display, Window window)
 {
+    if ( window == 0 ) return;
+    assert(display!=NULL);
     XSelectInput( display, window, _kbdd.w_events);
 }
 
