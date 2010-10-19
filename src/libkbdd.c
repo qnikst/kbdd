@@ -215,13 +215,14 @@ _on_createEvent(XEvent *e )
     XCreateWindowEvent * ev = &e->xcreatewindow;
     dbg("creating window %u",ev->window);
     Kbdd_add_window(ev->display, ev->window);
-//    _kbdd_storage_debug();
 }
 
 static void 
 _on_destroyEvent(XEvent *e)
 {
+    XSetErrorHandler(_xerrordummy);
     XDestroyWindowEvent * ev = &e->xdestroywindow;
+    XSync(ev->display, 0);
     dbg("destroying window %u",ev->window);
     Kbdd_remove_window(ev->window);
 }
@@ -229,12 +230,14 @@ _on_destroyEvent(XEvent *e)
 static void
 _on_propertyEvent(XEvent *e) 
 {
+    XSetErrorHandler(_xerrordummy);
     XPropertyEvent * ev = &e->xproperty;
     if (ev->state==0) return;
     int revert;
     Window focused_win;
     XGetInputFocus(ev->display, &focused_win, &revert);
     Kbdd_set_window_layout(ev->display, focused_win);
+    XSync(ev->display, 0);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,ev->window, ev->state);
     dbg("focused window: %u (%i)",focused_win,revert);
 }
@@ -242,6 +245,7 @@ _on_propertyEvent(XEvent *e)
 static void
 _on_focusEvent(XEvent *e)
 {
+    XSetErrorHandler(_xerrordummy);
     XFocusChangeEvent *ev = &e->xfocus;
     if (ev->window == _kbdd.focus_win) 
         return;
@@ -250,8 +254,7 @@ _on_focusEvent(XEvent *e)
     int revert;
     XGetInputFocus(ev->display, &focused_win, &revert);
     Kbdd_set_window_layout(ev->display, focused_win);
-    if ( _kbdd.forceAssign )
-        _assign_window(ev->display, focused_win);
+    XSync(ev->display, 0);
 }
 
 
@@ -272,15 +275,12 @@ _on_enterEvent(XEvent *e)
 static void
 _on_mapEvent(XEvent *e) 
 {
-    //XMapRequestEvent *ev = &e->xmaprequest;
     dbg("in map request");
 }
 
 static void 
 _focus(Window w) 
 {
-    if ( _kbdd.focus_win && _kbdd.focus_win!=w ) {}
-//      unfocus(w, 0);
     if (w) 
         _kbdd.focus_win = w;
 }
@@ -321,9 +321,11 @@ void _assign_window(Display * display, Window window)
     static XWindowAttributes wa;
     if ( window == 0 ) return;
     assert(display!=NULL);
+    XSetErrorHandler(_xerrordummy);
     if ( ! XGetWindowAttributes(display,window,&wa) ) 
         return;
     XSelectInput( display, window, _kbdd.w_events);
+    XSync(display, 0);
 }
 
 int Kbdd_add_window(Display * display, Window window)
