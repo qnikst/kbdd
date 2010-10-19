@@ -30,12 +30,15 @@
 
 //>>prototypes
 __inline__ void _inner_iter(Display * display);
+__inline__ void _assign_window(Display *display,Window window);
 static void _on_enterEvent(XEvent *e);
 static void _on_createEvent(XEvent *e);
 static void _on_destroyEvent(XEvent *e);
 static void _on_propertyEvent(XEvent *e);
 static void _on_focusEvent(XEvent *e);
-static void _assign_window(Display *display,Window window);
+static void _on_mapEvent(XEvent *e);
+static void _focus(Window w);
+int _xerrordummy(Display *dpy, XErrorEvent *ee);
 __inline__ void _on_xkbEvent(XkbEvent ev);
 //<<prototypes
 
@@ -44,9 +47,9 @@ typedef struct _KbddStructure {
     long root_events;
     int forceAssign;
     int haveNames;
-    int group_count;
-    char * group_names[];
+    Window focus_win;
 } KbddStructure;
+
 
 volatile int _xkbEventType;
 volatile UpdateCallback    _updateCallback = NULL;
@@ -54,6 +57,9 @@ volatile void *            _updateUserdata = NULL;
 volatile static Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
+static Window root  = 0;
+static int group_count;
+static char * group_names[];
 
 static void (*handler[LASTEvent]) (XEvent *) = {
     [EnterNotify]    = _on_enterEvent,
@@ -61,7 +67,8 @@ static void (*handler[LASTEvent]) (XEvent *) = {
     [FocusOut]       = _on_focusEvent,
     [PropertyNotify] = _on_propertyEvent,
     [DestroyNotify]  = _on_destroyEvent,
-    [CreateNotify]   = _on_createEvent
+    [CreateNotify]   = _on_createEvent,
+    [MapRequest]     = _on_mapEvent,
 };
 
 /******************************************************************************
@@ -81,10 +88,12 @@ Kbdd_init()
                    | FocusChangeMask
                    | PropertyChangeMask
                    | StructureNotifyMask
-                   | SubstructureNotifyMask;
+//                   | SubstructureNotifyMask
+                   ;
     _kbdd.root_events = StructureNotifyMask
                       | SubstructureNotifyMask
                       | PropertyChangeMask
+                      | LeaveWindowMask
                       | EnterWindowMask
                       | FocusChangeMask;
     
@@ -97,12 +106,13 @@ void
 Kbdd_clean()
 {
     size_t i;
+    /*
     for (i = 0; i < _kbdd.group_count; i++ )
     {
         if (_kbdd.group_names[i]!=NULL) 
             free(_kbdd.group_names[i]);
     }
-    _kbdd.group_names[i] = 0;
+    _kbdd.group_names[i] = 0;*/
 
     _kbdd_storage_free();
 }
@@ -132,11 +142,11 @@ void Kbdd_initialize_listeners( Display * display )
     dbg("Kbdd_initialize_listeners\n");
     assert(display!=NULL);
     int scr = DefaultScreen( display );
-    Window root_win = RootWindow( display, scr );
-    dbg("attating to window %u\n",root_win);
+    root = RootWindow( display, scr );
+    dbg("attating to window %u\n",root);
     XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
-    XSelectInput( display, root_win, _kbdd.root_events);
+    XSelectInput( display, root, _kbdd.root_events);
 }
 
 void Kbdd_setDisplay(Display * display)
@@ -233,6 +243,9 @@ static void
 _on_focusEvent(XEvent *e)
 {
     XFocusChangeEvent *ev = &e->xfocus;
+    if (ev->window == _kbdd.focus_win) 
+        return;
+    _focus(ev->window);    
     Window focused_win;
     int revert;
     XGetInputFocus(ev->display, &focused_win, &revert);
@@ -245,9 +258,34 @@ _on_focusEvent(XEvent *e)
 static void
 _on_enterEvent(XEvent *e)
 {
+    XSetErrorHandler(_xerrordummy);
+    XCrossingEvent *ev = &e->xcrossing;
+    if ( (ev->mode != NotifyNormal || ev->detail == NotifyInferior) 
+            && ev->window != root ) 
+        return;
+    _focus(ev->window);
+    XSync(ev->display, 0);
     dbg("enter event");
     return;
 }
+
+static void
+_on_mapEvent(XEvent *e) 
+{
+    //XMapRequestEvent *ev = &e->xmaprequest;
+    dbg("in map request");
+}
+
+static void 
+_focus(Window w) 
+{
+    if ( _kbdd.focus_win && _kbdd.focus_win!=w ) {}
+//      unfocus(w, 0);
+    if (w) 
+        _kbdd.focus_win = w;
+}
+
+
 
 __inline__ void
 _on_xkbEvent(XkbEvent ev)
@@ -269,13 +307,22 @@ _on_xkbEvent(XkbEvent ev)
     }
 }
 
+int 
+_xerrordummy(Display *dpy, XErrorEvent *ee) 
+{
+    return 0;
+}
 /**
  * Kbbdd inner actions
  */
+__inline__
 void _assign_window(Display * display, Window window)
 {
+    static XWindowAttributes wa;
     if ( window == 0 ) return;
     assert(display!=NULL);
+    if ( ! XGetWindowAttributes(display,window,&wa) ) 
+        return;
     XSelectInput( display, window, _kbdd.w_events);
 }
 
