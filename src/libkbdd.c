@@ -31,6 +31,7 @@
 //>>prototypes
 __inline__ void _inner_iter(Display * display);
 __inline__ void _assign_window(Display *display,Window window);
+__inline__ void _init_windows(Display * display);
 static void _on_enterEvent(XEvent *e);
 static void _on_createEvent(XEvent *e);
 static void _on_destroyEvent(XEvent *e);
@@ -147,6 +148,7 @@ void Kbdd_initialize_listeners( Display * display )
     XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
     XSelectInput( display, root, _kbdd.root_events);
+    _init_windows(display);
 }
 
 void Kbdd_setDisplay(Display * display)
@@ -326,6 +328,25 @@ void _assign_window(Display * display, Window window)
         return;
     XSelectInput( display, window, _kbdd.w_events);
     XSync(display, 0);
+}
+
+__inline__ void
+_init_windows(Display * display)
+{
+    unsigned int i, num;
+    Window d1,d2,*wins = NULL;
+    XWindowAttributes wa;
+    if ( XQueryTree(display, root, &d1, &d2, &wins, &num) )
+    {
+        for ( i=0; i < num; i++ )
+        {
+            if ( ! XGetWindowAttributes(display, wins[i], &wa) )
+                continue;
+            if ( wa.map_state == IsViewable )
+                _assign_window( display, wins[i] );
+        }
+        if (wins) XFree(wins);
+    }
 }
 
 int Kbdd_add_window(Display * display, Window window)
