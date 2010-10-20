@@ -342,8 +342,7 @@ _init_windows(Display * display)
         {
             if ( ! XGetWindowAttributes(display, wins[i], &wa) )
                 continue;
-            if ( wa.map_state == IsViewable )
-                _assign_window( display, wins[i] );
+            _assign_window( display, wins[i] );
         }
         if (wins) XFree(wins);
     }
