@@ -19,26 +19,38 @@
 #include <X11/XKBlib.h>
 #include <X11/Xmd.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 #include <assert.h>
+
+#include <stdio.h>
 
 #include "libkbdd.h"
 #include "common-defs.h"
 
 //>>prototypes
 __inline__ void _inner_iter(Display * display);
-__inline__ void _on_createEvent(XCreateWindowEvent ev);
-__inline__ void _on_destroyEvent(XDestroyWindowEvent ev);
-__inline__ void _on_propertyEvent(XPropertyEvent ev);
-__inline__ void _on_focusEvent(XFocusChangeEvent ev);
+__inline__ void _assign_window(Display *display,Window window);
+__inline__ void _init_windows(Display * display);
+static void _on_enterEvent(XEvent *e);
+static void _on_createEvent(XEvent *e);
+static void _on_destroyEvent(XEvent *e);
+static void _on_propertyEvent(XEvent *e);
+static void _on_focusEvent(XEvent *e);
+static void _on_mapEvent(XEvent *e);
+static void _focus(Window w);
+int _xerrordummy(Display *dpy, XErrorEvent *ee);
+__inline__ void _on_xkbEvent(XkbEvent ev);
 //<<prototypes
 
 typedef struct _KbddStructure {
     long w_events;
     long root_events;
+    int forceAssign;
+    int haveNames;
+    Window focus_win;
 } KbddStructure;
+
 
 volatile int _xkbEventType;
 volatile UpdateCallback    _updateCallback = NULL;
@@ -46,23 +58,63 @@ volatile void *            _updateUserdata = NULL;
 volatile static Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
+static Window root  = 0;
+static int group_count;
+static char * group_names[];
 
-void Kbdd_init()
+static void (*handler[LASTEvent]) (XEvent *) = {
+    [EnterNotify]    = _on_enterEvent,
+    [FocusIn]        = _on_focusEvent,
+    [FocusOut]       = _on_focusEvent,
+    [PropertyNotify] = _on_propertyEvent,
+    [DestroyNotify]  = _on_destroyEvent,
+    [CreateNotify]   = _on_createEvent,
+    [MapRequest]     = _on_mapEvent,
+};
+
+/******************************************************************************
+ * Interface part
+ *      specify fuctions to deal with the outter world
+ *
+ * Kbdd_init  - initialize structure and plugins
+ * Kbdd_clean - free memory allocated by kbdd
+ * Kbdd_initialize_display - initialize display and set xkbEventType
+ *
+ *****************************************************************************/
+
+void 
+Kbdd_init()
 {
-    _kbdd_storage_init(); 
     _kbdd.w_events = EnterWindowMask 
                    | FocusChangeMask
                    | PropertyChangeMask
-                   | StructureNotifyMask;
+                   | StructureNotifyMask
+//                   | SubstructureNotifyMask
+                   ;
     _kbdd.root_events = StructureNotifyMask
                       | SubstructureNotifyMask
                       | PropertyChangeMask
+                      | LeaveWindowMask
                       | EnterWindowMask
                       | FocusChangeMask;
+    
+    _kbdd.forceAssign = 0;
+
+    _kbdd_storage_init(); //initialize per-window storage
 }
 
-void Kbdd_clean()
+void 
+Kbdd_clean()
 {
+    size_t i;
+    /*
+    for (i = 0; i < _kbdd.group_count; i++ )
+    {
+        if (_kbdd.group_names[i]!=NULL) 
+            free(_kbdd.group_names[i]);
+    }
+    _kbdd.group_names[i] = 0;*/
+
     _kbdd_storage_free();
 }
 
@@ -91,11 +143,12 @@ void Kbdd_initialize_listeners( Display * display )
     dbg("Kbdd_initialize_listeners\n");
     assert(display!=NULL);
     int scr = DefaultScreen( display );
-    Window root_win = RootWindow( display, scr );
-    dbg("attating to window %u\n",root_win);
+    root = RootWindow( display, scr );
+    dbg("attating to window %u\n",root);
     XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
-    XSelectInput( display, root_win, _kbdd.root_events);
+    XSelectInput( display, root, _kbdd.root_events);
+    _init_windows(display);
 }
 
 void Kbdd_setDisplay(Display * display)
@@ -104,10 +157,6 @@ void Kbdd_setDisplay(Display * display)
     _display = display;
 }
 
-
-/**
- * Default iteration of catching Xorg events
- */
 int 
 Kbdd_default_iter(void * data)
 {
@@ -117,9 +166,6 @@ Kbdd_default_iter(void * data)
     return 1;
 }
 
-/**
- * Default loop for catching Xorg events
- */
 void * 
 Kbdd_default_loop(Display * display) 
 {
@@ -132,6 +178,10 @@ Kbdd_default_loop(Display * display)
         _inner_iter((Display *)display);
 }
 
+
+/******************************************************************************
+ *  Inner iterations
+ *****************************************************************************/
 __inline__
 void _inner_iter(Display * display)
 {
@@ -143,45 +193,13 @@ void _inner_iter(Display * display)
     XNextEvent( display, &ev.core);
     if ( ev.type == _xkbEventType )
     {
-        switch (ev.any.xkb_type)
-        {
-            case XkbStateNotify:
-                dbg( "LIBKBDD state notify event\n");
-                grp = ev.state.locked_group;
-                XGetInputFocus( display, &focused_win, &revert);
-                Kbdd_update_window_layout( display, focused_win,grp);
-                break;
-            default:
-                dbg("kbdnotify %u\n",ev.any.xkb_type);
-                break;
-        }
+        dbg("xkbEvent");
+        _on_xkbEvent(ev);
     }
     else 
     {
-        switch (ev.type)
-        {
-            case DestroyNotify:
-                _on_destroyEvent(ev.core.xdestroywindow);
-                break;
-            case CreateNotify:
-                _on_createEvent(ev.core.xcreatewindow);
-                break;
-            case FocusIn:
-            case FocusOut:
-                _on_focusEvent(ev.core.xfocus);
-                break;
-            case EnterNotify:
-                dbg( "LIBKBDD Enter event\n");
-                break;
-            case PropertyNotify:
-                _on_propertyEvent(ev.core.xproperty);
-                dbg("Property change notify\n");
-                break;
-            default:
-                dbg( "LIBKBDD default %u\n", ev.type);
-                XGetInputFocus(display, &focused_win, &revert);
-                break;
-        }
+        if ( handler[ev.type] )
+            handler[ev.type](&ev.core);
     }
 }
 
@@ -193,50 +211,146 @@ void _inner_iter(Display * display)
  *
  *
  */
-__inline__ void 
-_on_createEvent(XCreateWindowEvent ev )
+static void 
+_on_createEvent(XEvent *e )
 {
-    dbg("start\n");
-    assert(ev.display != NULL);
-    XSelectInput( ev.display, ev.window, _kbdd.w_events);
-    //we can set parent window layout or default layout
-    //if we use ev.parent 
-    Kbdd_add_window(ev.display, ev.window);
+    XCreateWindowEvent * ev = &e->xcreatewindow;
+    dbg("creating window %u",ev->window);
+    Kbdd_add_window(ev->display, ev->window);
 }
 
-__inline__ void 
-_on_destroyEvent(XDestroyWindowEvent ev)
+static void 
+_on_destroyEvent(XEvent *e)
 {
-    dbg( "LIBKBDD destroy notify event\n");
-    Kbdd_remove_window(ev.window);
+    XSetErrorHandler(_xerrordummy);
+    XDestroyWindowEvent * ev = &e->xdestroywindow;
+    XSync(ev->display, 0);
+    dbg("destroying window %u",ev->window);
+    Kbdd_remove_window(ev->window);
 }
+
+static void
+_on_propertyEvent(XEvent *e) 
+{
+    XSetErrorHandler(_xerrordummy);
+    XPropertyEvent * ev = &e->xproperty;
+    if (ev->state==0) return;
+    int revert;
+    Window focused_win;
+    XGetInputFocus(ev->display, &focused_win, &revert);
+    Kbdd_set_window_layout(ev->display, focused_win);
+    XSync(ev->display, 0);
+    dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,ev->window, ev->state);
+    dbg("focused window: %u (%i)",focused_win,revert);
+}
+
+static void
+_on_focusEvent(XEvent *e)
+{
+    XSetErrorHandler(_xerrordummy);
+    XFocusChangeEvent *ev = &e->xfocus;
+    if (ev->window == _kbdd.focus_win) 
+        return;
+    _focus(ev->window);    
+    Window focused_win;
+    int revert;
+    XGetInputFocus(ev->display, &focused_win, &revert);
+    Kbdd_set_window_layout(ev->display, focused_win);
+    XSync(ev->display, 0);
+}
+
+
+static void
+_on_enterEvent(XEvent *e)
+{
+    XSetErrorHandler(_xerrordummy);
+    XCrossingEvent *ev = &e->xcrossing;
+    if ( (ev->mode != NotifyNormal || ev->detail == NotifyInferior) 
+            && ev->window != root ) 
+        return;
+    _focus(ev->window);
+    XSync(ev->display, 0);
+    dbg("enter event");
+    return;
+}
+
+static void
+_on_mapEvent(XEvent *e) 
+{
+    dbg("in map request");
+}
+
+static void 
+_focus(Window w) 
+{
+    if (w) 
+        _kbdd.focus_win = w;
+}
+
+
 
 __inline__ void
-_on_propertyEvent(XPropertyEvent ev) 
-{
-    dbg("start");
-    dbg("window id %i\n",ev.window);
-    Kbdd_set_window_layout(ev.display, ev.window);
-}
-
-__inline__ void
-_on_focusEvent(XFocusChangeEvent ev)
+_on_xkbEvent(XkbEvent ev)
 {
     Window focused_win;
     int revert;
-    dbg( "LIBKBDD Focus out");
-    dbg("window id %i", ev.window);
-    XGetInputFocus(ev.display, &focused_win, &revert);
-    dbg("window real %i", focused_win);
-    dbg("===========================");
-    Kbdd_set_window_layout(ev.display, focused_win);
+    uint32_t grp;
+    switch (ev.any.xkb_type)
+    {
+        case XkbStateNotify:
+            dbg( "LIBKBDD state notify event\n");
+            grp = ev.state.group;
+            XGetInputFocus( ev.any.display, &focused_win, &revert);
+            Kbdd_update_window_layout( ev.any.display, focused_win,grp);
+            break;
+        default:
+            dbg("kbdnotify %u\n",ev.any.xkb_type);
+            break;
+    }
+}
 
+int 
+_xerrordummy(Display *dpy, XErrorEvent *ee) 
+{
+    return 0;
 }
 /**
  * Kbbdd inner actions
  */
+__inline__
+void _assign_window(Display * display, Window window)
+{
+    static XWindowAttributes wa;
+    if ( window == 0 ) return;
+    assert(display!=NULL);
+    XSetErrorHandler(_xerrordummy);
+    if ( ! XGetWindowAttributes(display,window,&wa) ) 
+        return;
+    XSelectInput( display, window, _kbdd.w_events);
+    XSync(display, 0);
+}
+
+__inline__ void
+_init_windows(Display * display)
+{
+    unsigned int i, num;
+    Window d1,d2,*wins = NULL;
+    XWindowAttributes wa;
+    if ( XQueryTree(display, root, &d1, &d2, &wins, &num) )
+    {
+        for ( i=0; i < num; i++ )
+        {
+            if ( ! XGetWindowAttributes(display, wins[i], &wa) )
+                continue;
+            _assign_window( display, wins[i] );
+        }
+        if (wins) XFree(wins);
+    }
+}
+
 int Kbdd_add_window(Display * display, Window window)
 {
+    _assign_window(display, window);
     XkbStateRec state;
     if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success ) 
     {
@@ -270,6 +384,35 @@ void Kbdd_update_window_layout ( Display * display, Window window, unsigned char
     _kbdd_storage_put(win, g);
     if ( _updateCallback != NULL ) 
         _updateCallback(g, (void *)_updateUserdata);
+}
+
+static void 
+kbdd_group_names_initialize(Display * display)
+{
+    /*
+    XkbDescRec * desc = XkbAllocKeyboard();
+    assert(desc != NULL);
+    XkbGetControls(display, XkbAllControlMask, desc);
+    XkbGetNames(display, XkbGroupNamesMask, desc);
+    if ( (desc->names == NULL) 
+            ||  (desc->names->groups == NULL) ) {
+        return;
+    }
+    int i;
+    Atom * group_source = desc->names->group;
+    for ( i=0; i < XkbNumKbdGroups; i++ )
+    {
+        free(_xkb->group_names[i]);
+        _xkb->group_names[i] = NULL;
+        if ( group_source[i] != None )
+        {
+            _xkb->group_count = i+1;
+            char * p = XGetAtomName(display, group_source[i]);
+            _xkb->group_names[i] = strdup(p);
+            XFree(p);
+        }
+    }
+    XkbFreeKeyboard(desc, 0, 1);*/
 }
 //vim:ts=4:expandtab
 
