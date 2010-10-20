@@ -53,6 +53,8 @@ void Kbdd_remove_window(Window);
 
 void Kbdd_setupUpdateCallback(UpdateCallback, void *);
 
+int  Kbdd_getLayoutName( uint32_t id, char * layout);
+
 /**
  * default main loop that need to make xkbd working
  */
@@ -64,5 +66,6 @@ void Kbdd_initialize_listeners( Display * );
 
 void Kbdd_setDisplay(Display *);
 int Kbdd_default_iter(void *);
+
 #endif
 //vim:ts=4:expandtab

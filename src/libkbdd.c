@@ -29,6 +29,7 @@
 #include "common-defs.h"
 
 //>>prototypes
+static void  kbdd_group_names_initialize(Display *display);
 __inline__ void _inner_iter(Display * display);
 __inline__ void _assign_window(Display *display,Window window);
 __inline__ void _init_windows(Display * display);
@@ -59,8 +60,8 @@ volatile static Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
 static Window root  = 0;
-static int group_count;
-static char * group_names[];
+int    _group_count;
+char * * _group_names;
 
 static void (*handler[LASTEvent]) (XEvent *) = {
     [EnterNotify]    = _on_enterEvent,
@@ -107,13 +108,12 @@ void
 Kbdd_clean()
 {
     size_t i;
-    /*
-    for (i = 0; i < _kbdd.group_count; i++ )
+    for (i = 0; i < _group_count; i++ )
     {
-        if (_kbdd.group_names[i]!=NULL) 
-            free(_kbdd.group_names[i]);
+        if ( _group_names[i] != NULL) 
+            free( _group_names[i] );
     }
-    _kbdd.group_names[i] = 0;*/
+    _group_names[i] = 0;
 
     _kbdd_storage_free();
 }
@@ -140,8 +140,10 @@ Kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
 
 void Kbdd_initialize_listeners( Display * display )
 {
-    dbg("Kbdd_initialize_listeners\n");
+    dbg("Kbdd_initialize_listeners");
     assert(display!=NULL);
+    dbg("keyboard initialized");
+    kbdd_group_names_initialize(display);
     int scr = DefaultScreen( display );
     root = RootWindow( display, scr );
     dbg("attating to window %u\n",root);
@@ -386,33 +388,52 @@ void Kbdd_update_window_layout ( Display * display, Window window, unsigned char
         _updateCallback(g, (void *)_updateUserdata);
 }
 
+/**
+ * Group names functions
+ */
+
 static void 
 kbdd_group_names_initialize(Display * display)
 {
-    /*
+    
+    dbg("initializing keyboard");
     XkbDescRec * desc = XkbAllocKeyboard();
     assert(desc != NULL);
-    XkbGetControls(display, XkbAllControlMask, desc);
-    XkbGetNames(display, XkbGroupNamesMask, desc);
+    XkbGetControls(display, XkbAllControlsMask, desc);
+    XkbGetNames(display, XkbSymbolsNameMask | XkbGroupNamesMask, desc);
     if ( (desc->names == NULL) 
             ||  (desc->names->groups == NULL) ) {
+        dbg("unable to get names");
         return;
     }
-    int i;
-    Atom * group_source = desc->names->group;
+    uint32_t i;
+    Atom * group_source = desc->names->groups;
+    if ( _group_names )
+        free( _group_names );
+    _group_names = malloc( XkbNumKbdGroups * sizeof( char * ) );
     for ( i=0; i < XkbNumKbdGroups; i++ )
     {
-        free(_xkb->group_names[i]);
-        _xkb->group_names[i] = NULL;
+        _group_names[i] = NULL;
         if ( group_source[i] != None )
         {
-            _xkb->group_count = i+1;
+            _group_count = i+1;
             char * p = XGetAtomName(display, group_source[i]);
-            _xkb->group_names[i] = strdup(p);
+            _group_names[i] = strdup(p);
+            dbg("%u: %s",i,_group_names[i]);
             XFree(p);
         }
     }
-    XkbFreeKeyboard(desc, 0, 1);*/
+    XkbFreeKeyboard(desc, 0, 1);
 }
+
+int  
+Kbdd_getLayoutName( uint32_t id, char * layout)
+{
+  if ( id < 0 || id>=_group_count ) return 0;
+  dbg( "layout: %s",_group_names[id] );
+  layout = strdup( (const char *)_group_names[id] );
+  return 1;
+}
+
 //vim:ts=4:expandtab
 
