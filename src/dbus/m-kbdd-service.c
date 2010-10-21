@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
 #include "m-kbdd-service.h"
-#include "assert.h"
 #include "../common-defs.h"
+#include "../libkbdd.h"
+
+#include "assert.h"
 
 G_DEFINE_TYPE(MKbddService, m_kbdd_service, G_TYPE_OBJECT)
 
@@ -32,7 +34,8 @@ static void
 m_kbdd_service_class_init (MKbddServiceClass *klass)
 {
     const char * signalNames[E_SIGNAL_COUNT] = {
-        SIGNAL_LAYOUT_CHANGED
+        SIGNAL_LAYOUT_CHANGED ,
+        SIGNAL_LAYOUT_NAME_CHANGED
     };
     int i;
 
@@ -43,9 +46,9 @@ m_kbdd_service_class_init (MKbddServiceClass *klass)
     object_class = G_OBJECT_CLASS (klass);
     object_class->finalize = m_kbdd_service_finalize;
 
-    for ( i = 0; i <E_SIGNAL_COUNT; i++ ) {
+    /* SIGNAL_LAYOUT_CHANGED */ {
         guint signalId;
-        signalId = g_signal_new(signalNames[i],
+        signalId = g_signal_new(signalNames[0],
             G_OBJECT_CLASS_TYPE(klass), //Gtype to which signal is bound to
             G_SIGNAL_RUN_LAST,
             0,
@@ -55,7 +58,22 @@ m_kbdd_service_class_init (MKbddServiceClass *klass)
             G_TYPE_NONE,
             1,
             G_TYPE_UINT);
-        klass->signals[i] = signalId;
+        klass->signals[0] = signalId;
+    }
+
+    /* SIGNAL_LAYOUT_NAME_CHANGED */ {
+        guint signalId;
+        signalId = g_signal_new(signalNames[1],
+                G_OBJECT_CLASS_TYPE(klass), 
+                G_SIGNAL_RUN_LAST,
+                0,
+                NULL,
+                NULL,
+                g_cclosure_marshal_VOID__STRING,
+                G_TYPE_NONE,
+                1,
+                G_TYPE_STRING);
+        klass->signals[1] = signalId;
     }
 
 }
@@ -73,6 +91,7 @@ m_kbdd_service_new (void)
     return g_object_new (M_TYPE_KBDD_SERVICE, NULL);
 }
 
+/*
 static void
 kbdd_service_emitSignal(MKbddService * obj,
                         ValueSignalNumber num,
@@ -94,13 +113,20 @@ m_kbdd_service_setLayout(MKbddService * obj, unsigned int valueIn,
     if (obj->layout != valueIn) 
     {
         obj->layout = valueIn;
+        // Kbdd_set_layot(id);
         kbdd_service_emitSignal(obj, E_SIGNAL_LAYOUT_CHANGED, "layout_changed");
     }
     return 1;
-}
+}*/
 
+/**
+ * Get current layout
+ * @param uint32_t valueOut - current layout
+ *
+ * @TODO: set normal types 
+ */
 int 
-m_kbdd_service_getLayout(MKbddService * obj, unsigned int * valueOut, GError ** error)
+m_kbdd_service_get_layout(MKbddService * obj, unsigned int * valueOut, GError ** error)
 {
     assert( obj != NULL );
     assert( valueOut != NULL );
@@ -108,20 +134,47 @@ m_kbdd_service_getLayout(MKbddService * obj, unsigned int * valueOut, GError ** 
     return 1;
 }
 
+/**
+ * Switch current window to the next layout
+ *
+ * @TODO implement
+ * @TODO improve avalability to set previous layout
+ */
 int
 m_kbdd_service_next_layout(MKbddService *obj, GError ** error) 
 {
-    return 1;
+    //TODO: implement
+    return 0;
 }
 
 int 
 m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 {
-    return 1;
+    //Not yet implements (and I think will never be)
+    return 0;
 }
 
+/**
+ *  Get symbolic layout name 
+ *  @param uint32_t id   - layout id
+ *  @param char * result - result 
+ */
+int 
+m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char * value, GError **error)
+{
+    value = NULL;
+    if ( Kbdd_get_layout_name(id, &value) ) 
+        return 1;
+    //TODO print error
+    return 0;
+}
+
+/**
+ * set layout
+ * @param uint32_t new layout
+ */
 void
-m_kbdd_service_set_layout(MKbddService *obj, unsigned int value)
+m_kbdd_service_update_layout(MKbddService *obj, uint32_t value, const char * layout_name)
 {
     assert(obj != NULL);
     if (obj->layout != value) 
@@ -131,5 +184,16 @@ m_kbdd_service_set_layout(MKbddService *obj, unsigned int value)
         assert(klass != NULL);
         dbg(" set layout event (emmitting signal)");
         g_signal_emit(obj, klass->signals[E_SIGNAL_LAYOUT_CHANGED], 0, value);
+        if (layout_name != NULL)
+        {
+//          dbg(" set layout event (emmitting signal2)");
+          g_signal_emit(obj, klass->signals[E_SIGNAL_LAYOUT_NAME_CHANGED], 0, layout_name);
+        }
     }
+}
+
+int
+m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError **error) 
+{
+    return 0;
 }
