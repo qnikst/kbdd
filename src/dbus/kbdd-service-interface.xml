@@ -2,9 +2,23 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/ru/gentoo/kbdd">
     <interface name="ru.gentoo.kbdd">
+
         <signal name="layoutChanged">
             <arg type="u" name="layout_id" direction="out"/>
         </signal>
+
+        <signal name="layoutNameChanged">
+            <arg type="s" name="layout_name" direction="out"/>
+        </signal>
+
+        <method name="getLayoutName">
+            <arg type="u" name="layout_id" direction="in"/>
+            <arg type="s" name="layout_name" direction="out"/>
+        </method>
+
+        <method name="setLayout">
+            <arg type="u" name="layout_id" direction="in"/>
+        </method>
 
         <method name="next_layout">
         </method>
@@ -12,6 +26,7 @@
         <method name="set_policy">
             <arg type="u" name="policy" direction="in"/>
         </method>
+
   </interface>
 </node>
 
