@@ -53,7 +53,7 @@ void Kbdd_remove_window(Window);
 
 void Kbdd_setupUpdateCallback(UpdateCallback, void *);
 
-int  Kbdd_getLayoutName( uint32_t id, char * layout);
+int  Kbdd_get_layout_name( uint32_t id, char ** layout);
 
 /**
  * default main loop that need to make xkbd working

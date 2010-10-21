@@ -224,6 +224,7 @@ _on_createEvent(XEvent *e )
 static void 
 _on_destroyEvent(XEvent *e)
 {
+    dbg("destroy event");
     XSetErrorHandler(_xerrordummy);
     XDestroyWindowEvent * ev = &e->xdestroywindow;
     XSync(ev->display, 0);
@@ -237,13 +238,17 @@ _on_propertyEvent(XEvent *e)
     XSetErrorHandler(_xerrordummy);
     XPropertyEvent * ev = &e->xproperty;
     if (ev->state==0) return;
+    if (ev->window == _kbdd.focus_win)
+        return;
+    _focus(ev->window);
+    dbg("property event");
     int revert;
     Window focused_win;
     XGetInputFocus(ev->display, &focused_win, &revert);
-    Kbdd_set_window_layout(ev->display, focused_win);
+    Kbdd_set_window_layout(ev->display, /*ev->window,*/ focused_win);
     XSync(ev->display, 0);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,ev->window, ev->state);
-    dbg("focused window: %u (%i)",focused_win,revert);
+    //dbg("focused window: %u (%i)",focused_win,revert);
 }
 
 static void
@@ -254,10 +259,11 @@ _on_focusEvent(XEvent *e)
     if (ev->window == _kbdd.focus_win) 
         return;
     _focus(ev->window);    
+    dbg("focus event %u", ev->window);
     Window focused_win;
     int revert;
     XGetInputFocus(ev->display, &focused_win, &revert);
-    Kbdd_set_window_layout(ev->display, focused_win);
+    Kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
     XSync(ev->display, 0);
 }
 
@@ -427,11 +433,11 @@ kbdd_group_names_initialize(Display * display)
 }
 
 int  
-Kbdd_getLayoutName( uint32_t id, char * layout)
+Kbdd_get_layout_name( uint32_t id, char ** layout)
 {
   if ( id < 0 || id>=_group_count ) return 0;
   dbg( "layout: %s",_group_names[id] );
-  layout = strdup( (const char *)_group_names[id] );
+  *layout = strdup( (const char *)_group_names[id] );
   return 1;
 }
 
