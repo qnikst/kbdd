@@ -18,6 +18,7 @@
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 #include <X11/Xmd.h>
+#include <X11/keysym.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +28,9 @@
 
 #include "libkbdd.h"
 #include "common-defs.h"
+
+#define CLEANMASK(mask) (mask & ~(LockMask))
+#define LENGTH(X)       (sizeof X / sizeof X[0])
 
 //>>prototypes
 static void  kbdd_group_names_initialize(Display *display);
@@ -39,10 +43,25 @@ static void _on_destroyEvent(XEvent *e);
 static void _on_propertyEvent(XEvent *e);
 static void _on_focusEvent(XEvent *e);
 static void _on_mapEvent(XEvent *e);
+static void _on_keypressEvent(XEvent *e);
 static void _focus(Window w);
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
 __inline__ void _on_xkbEvent(XkbEvent ev);
 //<<prototypes
+
+typedef union {
+    int i;
+    unsigned int ui;
+    float f;
+    const void *v;
+} Arg;
+
+typedef struct {
+    unsigned int mod;
+    KeySym keysym;
+    void (*func)(const Arg *);
+    const Arg arg;
+} Key;
 
 typedef struct _KbddStructure {
     long w_events;
@@ -71,7 +90,11 @@ static void (*handler[LASTEvent]) (XEvent *) = {
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
     [MapRequest]     = _on_mapEvent,
+    [KeyPress]       = _on_keypressEvent
 };
+
+static void _set_current_window_layout(const Arg *arg);
+#include "keys.h"
 
 /******************************************************************************
  * Interface part
@@ -90,6 +113,7 @@ Kbdd_init()
                    | FocusChangeMask
                    | PropertyChangeMask
                    | StructureNotifyMask
+                   | KeyPressMask
 //                   | SubstructureNotifyMask
                    ;
     _kbdd.root_events = StructureNotifyMask
@@ -97,7 +121,8 @@ Kbdd_init()
                       | PropertyChangeMask
                       | LeaveWindowMask
                       | EnterWindowMask
-                      | FocusChangeMask;
+                      | FocusChangeMask
+                      | KeyPressMask;
     
     _kbdd.forceAssign = 0;
 
@@ -289,13 +314,27 @@ _on_mapEvent(XEvent *e)
 }
 
 static void 
+_on_keypressEvent(XEvent *e)
+{
+    unsigned int i;
+
+    KeySym keysym;
+    XKeyEvent *ev;
+    ev = &e->xkey;
+    keysym = XKeycodeToKeysym(ev->display, ev->keycode, 0);
+    for ( i = 0; i < LENGTH(keys); i++ )
+        if (keysym == keys[i].keysym
+                && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
+                && keys[i].func)
+            keys[i].func(&(keys[i].arg));
+}
+
+static void 
 _focus(Window w) 
 {
     if (w) 
         _kbdd.focus_win = w;
 }
-
-
 
 __inline__ void
 _on_xkbEvent(XkbEvent ev)
@@ -316,6 +355,7 @@ _on_xkbEvent(XkbEvent ev)
             break;
     }
 }
+
 
 int 
 _xerrordummy(Display *dpy, XErrorEvent *ee) 
@@ -394,6 +434,21 @@ void Kbdd_update_window_layout ( Display * display, Window window, unsigned char
         _updateCallback(g, (void *)_updateUserdata);
 }
 
+void Kbdd_set_current_window_layout ( uint32_t layout) 
+{
+    dbg("set window layout %u",layout);
+    Window focused_win;
+    int revert;
+    XGetInputFocus( (Display *)_display, &focused_win, &revert);
+    Kbdd_update_window_layout( (Display *)_display, focused_win, layout);
+}
+
+static 
+void _set_current_window_layout(const Arg * arg) 
+{
+    dbg("inner set window layout");
+    Kbdd_set_current_window_layout( arg->ui );
+}
 /**
  * Group names functions
  */
@@ -431,6 +486,8 @@ kbdd_group_names_initialize(Display * display)
     }
     XkbFreeKeyboard(desc, 0, 1);
 }
+
+
 
 int  
 Kbdd_get_layout_name( uint32_t id, char ** layout)
