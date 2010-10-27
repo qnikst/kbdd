@@ -90,7 +90,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
     [MapRequest]     = _on_mapEvent,
-    [KeyPress]       = _on_keypressEvent
+//    [KeyPress]       = _on_keypressEvent
 };
 
 static void _set_current_window_layout(const Arg *arg);
@@ -113,7 +113,7 @@ Kbdd_init()
                    | FocusChangeMask
                    | PropertyChangeMask
                    | StructureNotifyMask
-                   | KeyPressMask
+//                   | KeyPressMask
 //                   | SubstructureNotifyMask
                    ;
     _kbdd.root_events = StructureNotifyMask
@@ -122,7 +122,7 @@ Kbdd_init()
                       | LeaveWindowMask
                       | EnterWindowMask
                       | FocusChangeMask
-                      | KeyPressMask;
+//                      | KeyPressMask;
     
     _kbdd.forceAssign = 0;
 
@@ -316,6 +316,7 @@ _on_mapEvent(XEvent *e)
 static void 
 _on_keypressEvent(XEvent *e)
 {
+    /*
     unsigned int i;
 
     KeySym keysym;
@@ -327,6 +328,7 @@ _on_keypressEvent(XEvent *e)
                 && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
                 && keys[i].func)
             keys[i].func(&(keys[i].arg));
+            */
 }
 
 static void 
@@ -437,11 +439,7 @@ void Kbdd_update_window_layout ( Display * display, Window window, unsigned char
 void Kbdd_set_current_window_layout ( uint32_t layout) 
 {
     dbg("set window layout %u",layout);
-    //Window focused_win;
-    //int revert;
     int result = XkbLockGroup( (Display *)_display, XkbUseCoreKbd, layout);
-    //XGetInputFocus( (Display *)_display, &focused_win, &revert);
-    //Kbdd_update_window_layout( (Display *)_display, focused_win, layout);
 }
 
 static 
