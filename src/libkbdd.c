@@ -437,10 +437,11 @@ void Kbdd_update_window_layout ( Display * display, Window window, unsigned char
 void Kbdd_set_current_window_layout ( uint32_t layout) 
 {
     dbg("set window layout %u",layout);
-    Window focused_win;
-    int revert;
-    XGetInputFocus( (Display *)_display, &focused_win, &revert);
-    Kbdd_update_window_layout( (Display *)_display, focused_win, layout);
+    //Window focused_win;
+    //int revert;
+    int result = XkbLockGroup( (Display *)_display, XkbUseCoreKbd, layout);
+    //XGetInputFocus( (Display *)_display, &focused_win, &revert);
+    //Kbdd_update_window_layout( (Display *)_display, focused_win, layout);
 }
 
 static 

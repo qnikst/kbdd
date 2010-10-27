@@ -16,7 +16,7 @@
             <arg type="s" name="layout_name" direction="out"/>
         </method>
 
-        <method name="setLayout">
+        <method name="set_layout">
             <arg type="u" name="layout_id" direction="in"/>
         </method>
 
