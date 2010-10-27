@@ -25,6 +25,7 @@
 #endif
 
 #ifdef DEBUG
+#include <stdio.h>
 #define dbg(fmtstr,args...) \
     (printf(PACKAGE_NAME" :%s " fmtstr "\n",__func__,##args))
 #else

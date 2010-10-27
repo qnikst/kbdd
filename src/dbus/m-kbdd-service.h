@@ -18,6 +18,7 @@
 #ifndef _M_KBDD_SERVICE_H_
 #define _M_KBDD_SERVICE_H_
 
+#include <stdint.h>
 #include <glib.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
@@ -25,6 +26,7 @@
 
 
 #define SIGNAL_LAYOUT_CHANGED       "layout_changed"
+#define SIGNAL_LAYOUT_NAME_CHANGED  "layout_name_changed"
 
 #define M_DBUS_KBDD_SERVICE_PATH  "/ru/gentoo/KbddService"
 #define M_DBUS_KBDD_SERVICE       "ru.gentoo.KbddService"
@@ -40,6 +42,7 @@ G_BEGIN_DECLS
 
 typedef enum {
     E_SIGNAL_LAYOUT_CHANGED,
+    E_SIGNAL_LAYOUT_NAME_CHANGED,
     E_SIGNAL_COUNT
 } ValueSignalNumber;
 
@@ -55,12 +58,20 @@ struct _MKbddServiceClass {
             GObjectClass parent;
             guint signals[E_SIGNAL_COUNT];
 };
-
-void m_kbdd_service_set_layout(MKbddService *obj, unsigned int value);
-
+/** DBUS METHODS **/
+//set layout to the current one
+int m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError ** error);
+//change layout to the next one
 int m_kbdd_service_next_layout(MKbddService *obj, GError ** error);
+//set policy (not yet implemented)
 int m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error);
+//get layout name dbus method
+int m_kbdd_service_get_layout_name(MKbddService *, uint32_t, char *, GError **);
 
+/** INNER KBDD METHODS **/
+void m_kbdd_service_update_layout(MKbddService *, uint32_t, const char * );
+
+/** SERVICE METHODS **/
 MKbddService *m_kbdd_service_new (void);
 GType m_kbdd_service_get_type (void);
 
