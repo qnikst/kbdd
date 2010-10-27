@@ -712,7 +712,7 @@ m4trace:configure.ac:4: -1- m4_pattern_allow([^LIBS$])
 m4trace:configure.ac:4: -1- m4_pattern_allow([^build_alias$])
 m4trace:configure.ac:4: -1- m4_pattern_allow([^host_alias$])
 m4trace:configure.ac:4: -1- m4_pattern_allow([^target_alias$])
-m4trace:configure.ac:8: -1- AM_INIT_AUTOMAKE([kbdd], [0.2.9])
+m4trace:configure.ac:8: -1- AM_INIT_AUTOMAKE([kbdd], [0.3])
 m4trace:configure.ac:8: -1- m4_pattern_allow([^AM_[A-Z]+FLAGS$])
 m4trace:configure.ac:8: -1- AM_SET_CURRENT_AUTOMAKE_VERSION
 m4trace:configure.ac:8: -1- AM_AUTOMAKE_VERSION([1.11.1])
