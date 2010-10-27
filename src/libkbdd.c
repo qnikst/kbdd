@@ -123,6 +123,7 @@ Kbdd_init()
                       | EnterWindowMask
                       | FocusChangeMask
 //                      | KeyPressMask;
+                      ;
     
     _kbdd.forceAssign = 0;
 
