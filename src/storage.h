@@ -34,6 +34,7 @@ void _kbdd_storage_free();
 void _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group);
 
 GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win);
+GROUP_TYPE _kbdd_storage_get_prev(WINDOW_TYPE win);
 
 void _kbdd_storage_remove(WINDOW_TYPE win);
 
