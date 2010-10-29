@@ -37,6 +37,7 @@ GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win);
 GROUP_TYPE _kbdd_storage_get_prev(WINDOW_TYPE win);
 
 void _kbdd_storage_remove(WINDOW_TYPE win);
+void _kbdd_storage_clean();
 
 #endif
 //vim:ts=4:expandtab

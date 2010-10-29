@@ -144,4 +144,10 @@ void debug() {
     printf("=================\n");
 }
 
+void
+_kbdd_storage_clean() 
+{
+    g_hash_table_remove_all(gStorage);
+}
+
 //vim:ts=4:expandtab
