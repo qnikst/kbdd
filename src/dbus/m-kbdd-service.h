@@ -63,6 +63,8 @@ struct _MKbddServiceClass {
 int m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError ** error);
 //change layout to the next one
 int m_kbdd_service_next_layout(MKbddService *obj, GError ** error);
+//change layout to the previous one
+int m_kbdd_service_prev_layout(MKbddService *obj, GError ** error);
 //set policy (not yet implemented)
 int m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error);
 //get layout name dbus method

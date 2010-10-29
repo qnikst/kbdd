@@ -22,6 +22,9 @@
 
         <method name="next_layout">
         </method>
+
+        <method name="prev_layout">
+        </method>
        
         <method name="set_policy">
             <arg type="u" name="policy" direction="in"/>

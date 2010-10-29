@@ -148,6 +148,13 @@ m_kbdd_service_next_layout(MKbddService *obj, GError ** error)
 }
 
 int 
+m_kbdd_service_prev_layout(MKbddService *obj, GError ** error)
+{
+    Kbdd_set_previous_layout();
+    return 1;
+}
+
+int 
 m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 {
     //Not yet implements (and I think will never be)
