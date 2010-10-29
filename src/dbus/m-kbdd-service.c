@@ -167,12 +167,16 @@ m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
  *  @param char * result - result 
  */
 int 
-m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char * value, GError **error)
+m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char ** value, GError **error)
 {
-    value = NULL;
-    if ( Kbdd_get_layout_name(id, &value) ) 
+    char * tmp; 
+    if ( Kbdd_get_layout_name(id, &tmp) ) 
+    {
+        dbg("returned: %s", tmp);
+//      dbg("value addr %p", *value);
+        *value = tmp;
         return 1;
-    //TODO print error
+    }
     return 0;
 }
 
