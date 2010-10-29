@@ -353,8 +353,21 @@ _on_xkbEvent(XkbEvent ev)
             XGetInputFocus( ev.any.display, &focused_win, &revert);
             Kbdd_update_window_layout( ev.any.display, focused_win,grp);
             break;
-        default:
+        case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
+            _kbdd_storage_clean();
+            /* kbdd_group_names_clean >> */ { 
+                size_t i;
+                for (i = 0; i < _group_count; i++ )
+                {
+                    if ( _group_names[i] != NULL) 
+                        free( _group_names[i] );
+                }
+                _group_names[i] = 0;
+            } /* << kbdd_group_names_clean */
+            kbdd_group_names_initialize( ev.any.display );
+            break;
+        default:
             break;
     }
 }
