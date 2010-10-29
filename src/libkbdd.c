@@ -443,6 +443,21 @@ void Kbdd_set_current_window_layout ( uint32_t layout)
     int result = XkbLockGroup( (Display *)_display, XkbUseCoreKbd, layout);
 }
 
+void 
+Kbdd_set_previous_layout()
+{
+    Window focused_win;
+    int revert;
+    dbg("set previous layout");
+    if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )
+    {
+        uint32_t group = _kbdd_storage_get_prev(focused_win);
+        dbg("group %u",group);
+        Kbdd_set_current_window_layout( group );
+    }
+    
+}
+
 static 
 void _set_current_window_layout(const Arg * arg) 
 {
