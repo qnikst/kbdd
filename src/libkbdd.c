@@ -42,7 +42,7 @@ static void _on_createEvent(XEvent *e);
 static void _on_destroyEvent(XEvent *e);
 static void _on_propertyEvent(XEvent *e);
 static void _on_focusEvent(XEvent *e);
-static void _on_mapEvent(XEvent *e);
+static void _on_mappingEvent(XEvent *e);
 static void _on_keypressEvent(XEvent *e);
 static void _focus(Window w);
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
@@ -89,7 +89,8 @@ static void (*handler[LASTEvent]) (XEvent *) = {
     [PropertyNotify] = _on_propertyEvent,
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
-    [MapRequest]     = _on_mapEvent,
+    [MappingNotify]  = _on_mappingEvent,
+    [KeymapNotify]   = _on_mappingEvent
 //    [KeyPress]       = _on_keypressEvent
 };
 
@@ -122,6 +123,7 @@ Kbdd_init()
                       | LeaveWindowMask
                       | EnterWindowMask
                       | FocusChangeMask
+                      | KeymapStateMask
 //                      | KeyPressMask;
                       ;
     
@@ -311,9 +313,13 @@ _on_enterEvent(XEvent *e)
 }
 
 static void
-_on_mapEvent(XEvent *e) 
+_on_mappingEvent(XEvent *e) 
 {
     dbg("in map request");
+    XMappingEvent *ev = &e->xmapping;
+    _kbdd_storage_clean();
+    kbdd_group_names_initialize(ev->display);
+    XRefreshKeyboardMapping(ev);
 }
 
 static void 
