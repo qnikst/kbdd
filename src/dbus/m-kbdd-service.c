@@ -143,8 +143,8 @@ m_kbdd_service_get_layout(MKbddService * obj, unsigned int * valueOut, GError **
 int
 m_kbdd_service_next_layout(MKbddService *obj, GError ** error) 
 {
-    //TODO: implement
-    return 0;
+    Kbdd_set_next_layout();
+    return 1;
 }
 
 int 
@@ -158,6 +158,7 @@ int
 m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 {
     //Not yet implements (and I think will never be)
+    *error = "feature not implemented yeti\0";
     return 0;
 }
 
