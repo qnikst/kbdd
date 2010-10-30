@@ -172,7 +172,7 @@ void Kbdd_initialize_listeners( Display * display )
     kbdd_group_names_initialize(display);
     int scr = DefaultScreen( display );
     root = RootWindow( display, scr );
-    dbg("attating to window %u\n",root);
+    dbg("attating to window %u\n",(uint32_t)root);
     XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
     XSelectInput( display, root, _kbdd.root_events);
@@ -228,6 +228,8 @@ void _inner_iter(Display * display)
     {
         if ( handler[ev.type] )
             handler[ev.type](&ev.core);
+        else 
+            dbg("doesn't handle");
     }
 }
 
@@ -243,7 +245,7 @@ static void
 _on_createEvent(XEvent *e )
 {
     XCreateWindowEvent * ev = &e->xcreatewindow;
-    dbg("creating window %u",ev->window);
+    dbg("creating window %u",(uint32_t)ev->window);
     Kbdd_add_window(ev->display, ev->window);
 }
 
@@ -254,7 +256,7 @@ _on_destroyEvent(XEvent *e)
     XSetErrorHandler(_xerrordummy);
     XDestroyWindowEvent * ev = &e->xdestroywindow;
     XSync(ev->display, 0);
-    dbg("destroying window %u",ev->window);
+    dbg("destroying window %u",(uint32_t)ev->window);
     Kbdd_remove_window(ev->window);
 }
 
@@ -273,7 +275,7 @@ _on_propertyEvent(XEvent *e)
     XGetInputFocus(ev->display, &focused_win, &revert);
     Kbdd_set_window_layout(ev->display, /*ev->window,*/ focused_win);
     XSync(ev->display, 0);
-    dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,ev->window, ev->state);
+    dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
 }
 
@@ -285,7 +287,7 @@ _on_focusEvent(XEvent *e)
     if (ev->window == _kbdd.focus_win) 
         return;
     _focus(ev->window);    
-    dbg("focus event %u", ev->window);
+    dbg("focus event %u", (uint32_t)ev->window);
     Window focused_win;
     int revert;
     XGetInputFocus(ev->display, &focused_win, &revert);
