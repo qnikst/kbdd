@@ -479,6 +479,21 @@ Kbdd_set_previous_layout()
     
 }
 
+void 
+Kbdd_set_next_layout()
+{
+    Window focused_win;
+    int revert;
+    dbg("set next layout");
+    if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )
+    {
+        uint32_t group = _kbdd_storage_get(focused_win) + 1;
+        if ( group >= _group_count ) 
+            group = 0;
+        Kbdd_set_current_window_layout( group );
+    }
+}
+
 static 
 void _set_current_window_layout(const Arg * arg) 
 {
