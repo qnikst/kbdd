@@ -40,7 +40,6 @@ void _kbdd_storage_init() {
     if ( gStorage!=NULL ) return; 
 #ifdef STORAGE_GHASH
     gStorage = g_hash_table_new(g_direct_hash, NULL);
-//    debug();
 #endif
 }
 

@@ -90,7 +90,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
     [MappingNotify]  = _on_mappingEvent,
-    [KeymapNotify]   = _on_mappingEvent
+//    [KeymapNotify]   = _on_mappingEvent
 //    [KeyPress]       = _on_keypressEvent
 };
 
