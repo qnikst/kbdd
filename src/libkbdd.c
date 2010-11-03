@@ -42,7 +42,7 @@ static void _on_createEvent(XEvent *e);
 static void _on_destroyEvent(XEvent *e);
 static void _on_propertyEvent(XEvent *e);
 static void _on_focusEvent(XEvent *e);
-static void _on_mapEvent(XEvent *e);
+static void _on_mappingEvent(XEvent *e);
 static void _on_keypressEvent(XEvent *e);
 static void _focus(Window w);
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
@@ -89,7 +89,8 @@ static void (*handler[LASTEvent]) (XEvent *) = {
     [PropertyNotify] = _on_propertyEvent,
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
-    [MapRequest]     = _on_mapEvent,
+    [MappingNotify]  = _on_mappingEvent,
+//    [KeymapNotify]   = _on_mappingEvent
 //    [KeyPress]       = _on_keypressEvent
 };
 
@@ -122,6 +123,7 @@ Kbdd_init()
                       | LeaveWindowMask
                       | EnterWindowMask
                       | FocusChangeMask
+                      | KeymapStateMask
 //                      | KeyPressMask;
                       ;
     
@@ -172,7 +174,7 @@ void Kbdd_initialize_listeners( Display * display )
     kbdd_group_names_initialize(display);
     int scr = DefaultScreen( display );
     root = RootWindow( display, scr );
-    dbg("attating to window %u\n",root);
+    dbg("attating to window %u\n",(uint32_t)root);
     XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
     XSelectInput( display, root, _kbdd.root_events);
@@ -228,6 +230,8 @@ void _inner_iter(Display * display)
     {
         if ( handler[ev.type] )
             handler[ev.type](&ev.core);
+        else 
+            dbg("doesn't handle");
     }
 }
 
@@ -243,7 +247,7 @@ static void
 _on_createEvent(XEvent *e )
 {
     XCreateWindowEvent * ev = &e->xcreatewindow;
-    dbg("creating window %u",ev->window);
+    dbg("creating window %u",(uint32_t)ev->window);
     Kbdd_add_window(ev->display, ev->window);
 }
 
@@ -254,7 +258,7 @@ _on_destroyEvent(XEvent *e)
     XSetErrorHandler(_xerrordummy);
     XDestroyWindowEvent * ev = &e->xdestroywindow;
     XSync(ev->display, 0);
-    dbg("destroying window %u",ev->window);
+    dbg("destroying window %u",(uint32_t)ev->window);
     Kbdd_remove_window(ev->window);
 }
 
@@ -273,7 +277,7 @@ _on_propertyEvent(XEvent *e)
     XGetInputFocus(ev->display, &focused_win, &revert);
     Kbdd_set_window_layout(ev->display, /*ev->window,*/ focused_win);
     XSync(ev->display, 0);
-    dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,ev->window, ev->state);
+    dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
 }
 
@@ -285,7 +289,7 @@ _on_focusEvent(XEvent *e)
     if (ev->window == _kbdd.focus_win) 
         return;
     _focus(ev->window);    
-    dbg("focus event %u", ev->window);
+    dbg("focus event %u", (uint32_t)ev->window);
     Window focused_win;
     int revert;
     XGetInputFocus(ev->display, &focused_win, &revert);
@@ -309,9 +313,13 @@ _on_enterEvent(XEvent *e)
 }
 
 static void
-_on_mapEvent(XEvent *e) 
+_on_mappingEvent(XEvent *e) 
 {
     dbg("in map request");
+    XMappingEvent *ev = &e->xmapping;
+    _kbdd_storage_clean();
+    kbdd_group_names_initialize(ev->display);
+    XRefreshKeyboardMapping(ev);
 }
 
 static void 
@@ -353,8 +361,21 @@ _on_xkbEvent(XkbEvent ev)
             XGetInputFocus( ev.any.display, &focused_win, &revert);
             Kbdd_update_window_layout( ev.any.display, focused_win,grp);
             break;
-        default:
+        case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
+            _kbdd_storage_clean();
+            /* kbdd_group_names_clean >> */ { 
+                size_t i;
+                for (i = 0; i < _group_count; i++ )
+                {
+                    if ( _group_names[i] != NULL) 
+                        free( _group_names[i] );
+                }
+                _group_names[i] = 0;
+            } /* << kbdd_group_names_clean */
+            kbdd_group_names_initialize( ev.any.display );
+            break;
+        default:
             break;
     }
 }
@@ -441,6 +462,36 @@ void Kbdd_set_current_window_layout ( uint32_t layout)
 {
     dbg("set window layout %u",layout);
     int result = XkbLockGroup( (Display *)_display, XkbUseCoreKbd, layout);
+}
+
+void 
+Kbdd_set_previous_layout()
+{
+    Window focused_win;
+    int revert;
+    dbg("set previous layout");
+    if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )
+    {
+        uint32_t group = _kbdd_storage_get_prev(focused_win);
+        dbg("group %u",group);
+        Kbdd_set_current_window_layout( group );
+    }
+    
+}
+
+void 
+Kbdd_set_next_layout()
+{
+    Window focused_win;
+    int revert;
+    dbg("set next layout");
+    if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )
+    {
+        uint32_t group = _kbdd_storage_get(focused_win) + 1;
+        if ( group >= _group_count ) 
+            group = 0;
+        Kbdd_set_current_window_layout( group );
+    }
 }
 
 static 

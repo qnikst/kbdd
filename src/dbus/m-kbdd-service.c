@@ -143,14 +143,22 @@ m_kbdd_service_get_layout(MKbddService * obj, unsigned int * valueOut, GError **
 int
 m_kbdd_service_next_layout(MKbddService *obj, GError ** error) 
 {
-    //TODO: implement
-    return 0;
+    Kbdd_set_next_layout();
+    return 1;
+}
+
+int 
+m_kbdd_service_prev_layout(MKbddService *obj, GError ** error)
+{
+    Kbdd_set_previous_layout();
+    return 1;
 }
 
 int 
 m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 {
     //Not yet implements (and I think will never be)
+    *error = "feature not implemented yeti\0";
     return 0;
 }
 
@@ -160,12 +168,16 @@ m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
  *  @param char * result - result 
  */
 int 
-m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char * value, GError **error)
+m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char ** value, GError **error)
 {
-    value = NULL;
-    if ( Kbdd_get_layout_name(id, &value) ) 
+    char * tmp; 
+    if ( Kbdd_get_layout_name(id, &tmp) ) 
+    {
+        dbg("returned: %s", tmp);
+//      dbg("value addr %p", *value);
+        *value = tmp;
         return 1;
-    //TODO print error
+    }
     return 0;
 }
 

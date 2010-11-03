@@ -56,7 +56,8 @@ void Kbdd_setupUpdateCallback(UpdateCallback, void *);
 
 int  Kbdd_get_layout_name( uint32_t id, char ** layout);
 void Kbdd_set_current_window_layout ( uint32_t ); 
-
+void Kbdd_set_previous_layout();
+void Kbdd_set_next_layout();
 /**
  * default main loop that need to make xkbd working
  */

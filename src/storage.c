@@ -18,7 +18,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "storage.h"
-
+#include <assert.h>
+#include "common-defs.h"
 #ifdef STORAGE_GHASH
 #include <glib.h>
 #endif
@@ -30,13 +31,15 @@ GHashTable *gStorage = NULL;
 #define POINTER_TO_GUINT(u) ((gulong)(gpointer)(u))
 #endif
 
+
+
+
 void debug();
 
 void _kbdd_storage_init() {
     if ( gStorage!=NULL ) return; 
 #ifdef STORAGE_GHASH
     gStorage = g_hash_table_new(g_direct_hash, NULL);
-//    debug();
 #endif
 }
 
@@ -52,12 +55,44 @@ void _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
 {
     if ( gStorage != NULL ) {
 #ifdef STORAGE_GHASH
-        gpointer key = GUINT_TO_POINTER(win);
-        gpointer val = GUINT_TO_POINTER(group);
-        g_hash_table_replace(gStorage, key, val);
-//        debug();
+        gpointer key; // = GUINT_TO_POINTER(win);
+        gpointer value; //GUINT_TO_POINTER(group);
+        gpointer pWindow = GUINT_TO_POINTER(win);
+        if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
+        {
+            dbg("old %u",POINTER_TO_GUINT(value));
+            dbg("update p %u",POINTER_TO_GUINT(value)<<8);
+            dbg("new group %u", group & 0xFF);
+            value = GUINT_TO_POINTER(((POINTER_TO_GUINT(value) & 0xFF) <<8) | (group & 0xFF));
+            dbg("inserting %u",POINTER_TO_GUINT(value));
+            g_hash_table_replace(gStorage, pWindow, value);
+        }
+        else 
+        {
+            value = GUINT_TO_POINTER(group);
+            g_hash_table_insert(gStorage, pWindow, value);
+        }
+        debug();
     }
 #endif
+}
+
+GROUP_TYPE
+_kbdd_storage_get_prev(WINDOW_TYPE win)
+{
+    dbg("getprev %u", (uint32_t)win);
+    GROUP_TYPE group = 0;
+    assert(gStorage != NULL);
+    gpointer key = NULL;
+    gpointer value = NULL;
+    gpointer pWindow = GUINT_TO_POINTER(win);
+    if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
+    {
+        group = (GROUP_TYPE)((POINTER_TO_GUINT(value)>>8) & 0xFF );
+    }
+    else
+        group = 0;
+    return group;
 }
 
 GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win)
@@ -71,7 +106,7 @@ GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win)
         gpointer pWindow = GUINT_TO_POINTER(win);
         if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
         {
-            group = (GROUP_TYPE)POINTER_TO_GUINT(value);
+            group = (GROUP_TYPE)(POINTER_TO_GUINT(value) & 0xFF);
         }
         else 
         {
@@ -93,7 +128,7 @@ void _kbdd_storage_remove(WINDOW_TYPE win)
 }
 
 
-/*
+
 void debug() {
     GHashTableIter iter;
     g_hash_table_iter_init (&iter, gStorage);
@@ -106,6 +141,12 @@ void debug() {
         printf("key %u ---> %u\n",(uint32_t)key_,(uint32_t)val);
     }
     printf("=================\n");
-}*/
+}
+
+void
+_kbdd_storage_clean() 
+{
+    g_hash_table_remove_all(gStorage);
+}
 
 //vim:ts=4:expandtab
