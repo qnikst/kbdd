@@ -66,7 +66,6 @@ typedef struct {
 typedef struct _KbddStructure {
     long w_events;
     long root_events;
-    int forceAssign;
     int haveNames;
     Window focus_win;
 } KbddStructure;
@@ -127,8 +126,6 @@ Kbdd_init()
 //                      | KeyPressMask;
                       ;
     
-    _kbdd.forceAssign = 0;
-
     _kbdd_perwindow_init(); //initialize per-window storage
 }
 
