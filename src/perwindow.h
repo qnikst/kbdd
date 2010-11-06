@@ -20,8 +20,8 @@
 
 #include <stdint.h>
 
-typedef unsigned int WINDOW_TYPE ;
-typedef unsigned int GROUP_TYPE ;
+typedef unsigned int  WINDOW_TYPE ;
+typedef unsigned char GROUP_TYPE ;
 
 void _kbdd_perwindow_init();
 
