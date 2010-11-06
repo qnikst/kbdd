@@ -67,11 +67,11 @@ typedef struct _KbddStructure {
     long w_events;
     long root_events;
     int haveNames;
+    int _xkbEventType;
     Window focus_win;
 } KbddStructure;
 
 
-volatile int _xkbEventType;
 volatile UpdateCallback    _updateCallback = NULL;
 volatile void *            _updateUserdata = NULL;
 volatile static Display *  _display        = NULL;
@@ -152,7 +152,7 @@ Kbdd_initialize_display( )
     int mjr = XkbMajorVersion;
     int mnr = XkbMinorVersion;
     display = XkbOpenDisplay(display_name,&xkbEventType,&xkbError, &mjr,&mnr,&reason_rtrn);
-    _xkbEventType = xkbEventType;
+    _kbdd._xkbEventType = xkbEventType;
     return display;
 }
 
@@ -218,7 +218,7 @@ void _inner_iter(Display * display)
     int revert;
     uint32_t grp;
     XNextEvent( display, &ev.core);
-    if ( ev.type == _xkbEventType )
+    if ( ev.type == _kbdd._xkbEventType )
     {
         dbg("xkbEvent");
         _on_xkbEvent(ev);
