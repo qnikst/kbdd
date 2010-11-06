@@ -21,7 +21,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
-#include "storage.h"
+
+#include "perwindow.h"
 
 
 typedef void (*UpdateCallback)(unsigned int, void *);

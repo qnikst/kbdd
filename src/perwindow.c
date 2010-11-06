@@ -17,10 +17,11 @@
  **********************************************************************/
 #include <stdint.h>
 #include <stdlib.h>
-#include "storage.h"
 #include <assert.h>
 #include "common-defs.h"
 #include <glib.h>
+
+#include "perwindow.h"
 
 GHashTable *gStorage = NULL;
 #define GINT_TO_POINTER(i) ((gpointer) (glong) (i))
