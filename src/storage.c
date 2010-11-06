@@ -52,11 +52,11 @@ void _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
     gpointer pWindow = GUINT_TO_POINTER(win);
     if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
     {
-        dbg("old %u",POINTER_TO_GUINT(value));
-        dbg("update p %u",POINTER_TO_GUINT(value)<<8);
-        dbg("new group %u", group & 0xFF);
+        dbg("old %lu",POINTER_TO_GUINT(value));
+        dbg("update p %lu",POINTER_TO_GUINT(value)<<8);
+        dbg("new group %lu", group & 0xFF);
         value = GUINT_TO_POINTER(((POINTER_TO_GUINT(value) & 0xFF) <<8) | (group & 0xFF));
-        dbg("inserting %u",POINTER_TO_GUINT(value));
+        dbg("inserting %lu",POINTER_TO_GUINT(value));
         g_hash_table_replace(gStorage, pWindow, value);
     }
     else 
@@ -130,7 +130,7 @@ void debug() {
     uint32_t *key_;
     while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &val))
     {
-        printf("key %u ---> %u\n",(uint32_t)key_,(uint32_t)val);
+        printf("key %d ---> %d \n",key_,val);
     }
     printf("=================\n");
 }
