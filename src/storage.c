@@ -33,37 +33,39 @@ void debug();
 #define debug(dummy...) 
 #endif
 
-void _kbdd_storage_init() {
+void 
+_kbdd_storage_init() {
     if ( gStorage!=NULL ) return; 
     gStorage = g_hash_table_new(g_direct_hash, NULL);
 }
 
-void _kbdd_storage_free() {
+void 
+_kbdd_storage_free() {
     if ( gStorage != NULL ) {
         g_hash_table_destroy(gStorage);
     }
 }
 
-void _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
+void 
+_kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
 {
     assert( gStorage != NULL );
-    gpointer key; // = GUINT_TO_POINTER(win);
-    gpointer value; //GUINT_TO_POINTER(group);
+    gpointer key;
+    gpointer value;
     gpointer pWindow = GUINT_TO_POINTER(win);
     if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
     {
-        dbg("old %lu",POINTER_TO_GUINT(value));
-        dbg("update p %lu",POINTER_TO_GUINT(value)<<8);
-        dbg("new group %lu", group & 0xFF);
+        dbg("old %lu\n update p %lu\n new group %lu",POINTER_TO_GUINT(value) \
+                                                    ,POINTER_TO_GUINT(value)<<8 \
+                                                    , group & 0xFF );
         value = GUINT_TO_POINTER(((POINTER_TO_GUINT(value) & 0xFF) <<8) | (group & 0xFF));
-        dbg("inserting %lu",POINTER_TO_GUINT(value));
-        g_hash_table_replace(gStorage, pWindow, value);
     }
     else 
     {
         value = GUINT_TO_POINTER(group);
-        g_hash_table_insert(gStorage, pWindow, value);
     }
+    dbg("inserting %lu",POINTER_TO_GUINT(value));
+    g_hash_table_replace(gStorage, pWindow, value);
     debug();
 }
 
@@ -86,7 +88,8 @@ _kbdd_storage_get_prev(WINDOW_TYPE win)
     return group;
 }
 
-GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win)
+GROUP_TYPE 
+_kbdd_storage_get(WINDOW_TYPE win)
 {
     assert( gStorage != NULL );
     GROUP_TYPE group;
@@ -99,12 +102,13 @@ GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win)
     }
     else 
     {
-        return 0;
+        group = 0;
     }
     return group;
 }
 
-void _kbdd_storage_remove(WINDOW_TYPE win)
+void 
+_kbdd_storage_remove(WINDOW_TYPE win)
 {
     assert( gStorage != NULL );
     gpointer key = GUINT_TO_POINTER(win);
