@@ -20,20 +20,20 @@
 
 #include <stdint.h>
 
-typedef unsigned int   WINDOW_TYPE ;
+typedef unsigned int WINDOW_TYPE ;
 typedef unsigned int GROUP_TYPE ;
 
-void _kbdd_storage_init();
+void _kbdd_perwindow_init();
 
-void _kbdd_storage_free();
+void _kbdd_perwindow_free();
 
-void _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group);
+void _kbdd_perwindow_put(WINDOW_TYPE win, GROUP_TYPE group);
 
-GROUP_TYPE _kbdd_storage_get(WINDOW_TYPE win);
-GROUP_TYPE _kbdd_storage_get_prev(WINDOW_TYPE win);
+GROUP_TYPE _kbdd_perwindow_get(WINDOW_TYPE win);
+GROUP_TYPE _kbdd_perwindow_get_prev(WINDOW_TYPE win);
 
-void _kbdd_storage_remove(WINDOW_TYPE win);
-void _kbdd_storage_clean();
+void _kbdd_perwindow_remove(WINDOW_TYPE win);
+void _kbdd_perwindow_clean();
 
 #endif
 //vim:ts=4:expandtab

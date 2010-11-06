@@ -34,20 +34,20 @@ void debug();
 #endif
 
 void 
-_kbdd_storage_init() {
+_kbdd_perwindow_init() {
     if ( gStorage!=NULL ) return; 
     gStorage = g_hash_table_new(g_direct_hash, NULL);
 }
 
 void 
-_kbdd_storage_free() {
+_kbdd_perwindow_free() {
     if ( gStorage != NULL ) {
         g_hash_table_destroy(gStorage);
     }
 }
 
 void 
-_kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
+_kbdd_perwindow_put(WINDOW_TYPE win, GROUP_TYPE group)
 {
     assert( gStorage != NULL );
     gpointer key;
@@ -89,7 +89,7 @@ _kbdd_storage_get_prev(WINDOW_TYPE win)
 }
 
 GROUP_TYPE 
-_kbdd_storage_get(WINDOW_TYPE win)
+_kbdd_perwindow_get(WINDOW_TYPE win)
 {
     assert( gStorage != NULL );
     GROUP_TYPE group;
@@ -108,7 +108,7 @@ _kbdd_storage_get(WINDOW_TYPE win)
 }
 
 void 
-_kbdd_storage_remove(WINDOW_TYPE win)
+_kbdd_perwindow_remove(WINDOW_TYPE win)
 {
     assert( gStorage != NULL );
     gpointer key = GUINT_TO_POINTER(win);
