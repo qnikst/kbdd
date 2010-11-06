@@ -18,10 +18,6 @@
 #ifndef _STORAGE_H_
 #define _STORAGE_H_
 
-#ifdef STORAGE_GHASH
-#include <glib.h>
-#endif
-
 #include <stdint.h>
 
 typedef unsigned int   WINDOW_TYPE ;
