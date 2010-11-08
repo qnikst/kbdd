@@ -22,7 +22,7 @@
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 
-#include "perwindow.h"
+//#include "perwindow.h"
 
 
 typedef void (*UpdateCallback)(unsigned int, void *);
@@ -30,46 +30,41 @@ typedef void (*UpdateCallback)(unsigned int, void *);
 /**
  * Initialize subsystem
  */
-void Kbdd_init();
+void kbdd_init();
 /**
  * Deinitialize subsystem
  */
-void Kbdd_clean();
+void kbdd_clean();
 
 /**
  * Update window layout
  */
-int  Kbdd_set_window_layout(Display *,Window); 
+int  kbdd_set_window_layout(Display *,Window); 
 
 /**
  * Update group info to the current one
  */
-void Kbdd_update_window_layout(Display *, Window, unsigned char group);
+void kbdd_update_window_layout(Display *, Window, unsigned char group);
 
-/**
- *  Remove window info from storage
- *  Display * pointer to window
- */
-void Kbdd_remove_window(Window);
+void kbdd_setupUpdateCallback(UpdateCallback, void *);
 
-
-void Kbdd_setupUpdateCallback(UpdateCallback, void *);
-
-int  Kbdd_get_layout_name( uint32_t id, char ** layout);
-void Kbdd_set_current_window_layout ( uint32_t ); 
-void Kbdd_set_previous_layout();
-void Kbdd_set_next_layout();
+int  kbdd_get_layout_name( uint32_t id, char ** layout);
+void kbdd_set_current_window_layout ( uint32_t ); 
+void kbdd_set_previous_layout();
+void kbdd_set_next_layout();
+void kbdd_set_display(Display *);
+Display * kbdd_get_display();
 /**
  * default main loop that need to make xkbd working
  */
-void * Kbdd_default_loop();
+void * kbdd_default_loop(Display *);
 
-Display * Kbdd_initialize_display( );
+Display * kbdd_initialize_display( );
 
-void Kbdd_initialize_listeners( Display * );
+void kbdd_initialize_listeners( Display * );
 
-void Kbdd_setDisplay(Display *);
-int Kbdd_default_iter(void *);
+void kbdd_setDisplay(Display *);
+int kbdd_default_iter(void *);
 
 #endif
 //vim:ts=4:expandtab

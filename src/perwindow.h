@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
-#ifndef _STORAGE_H_
-#define _STORAGE_H_
+#ifndef _PERWINDOW_H_
+#define _PERWINDOW_H_
 
-#include <stdint.h>
+//#include <stdint.h>
 
 typedef unsigned int  WINDOW_TYPE ;
 typedef unsigned char GROUP_TYPE ;
