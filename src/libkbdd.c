@@ -316,6 +316,7 @@ _on_focusEvent(XEvent *e)
       int revert;
       XGetInputFocus(ev->display, &focused_win, &revert);
       (void) kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
+      _kbdd_focus_window(focused_win);//real focus
     }
     XSync(ev->display, 0);
 }
@@ -324,6 +325,7 @@ _on_focusEvent(XEvent *e)
 static void
 _on_enterEvent(XEvent *e)
 {
+    /*
     XSetErrorHandler(_xerrordummy);
     XCrossingEvent *ev = &e->xcrossing;
     if ( (ev->mode != NotifyNormal || ev->detail == NotifyInferior) 
@@ -331,7 +333,7 @@ _on_enterEvent(XEvent *e)
         return;
     _kbdd_focus_window(ev->window);
     XSync(ev->display, 0);
-    dbg("enter event");
+    dbg("enter event");*/
     return;
 }
 
