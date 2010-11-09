@@ -1,22 +1,42 @@
 kbdd - kbd daemon
 ===================
 simple daemon and library to make per window layout
+using XKB(X KeyBoard Extension).
+
+Features:
+  * dbus interface
+  * set layout group by its number
+  * switch to the previous layout 
 
 Requirements
 ------------
- * xorg server
- * glib
+In order to build kbdd you need:
+ * xorg header files with xkb support
+ * glib header files 
+ * dbus-glib header files (optional) 
 
 Installation
 ------------
+Program uses autotools installation system, so installation
+can be done in next steps:
 
-make 
-make install
+  ./configure options
+  make 
+  make install
 
-Running
+configuration options:
+  debug - adds additional debuging info
+  dbus  - enable dbus support
+
+Running kbdd
 -----------
+to run kbdd you can just run /usr/bin/kbdd to use kbdd in deamon
+mode, or '/usr/bin/kbdd -n' to run in verbose mode.
 
-run $kbdd
+More info
+---------------
+you can go to kbdd wiki to check usecases described:
+http://github.com/qnikst/kbdd/wiki/Usecases
 
 Troubleshooting
 ---------------
@@ -24,3 +44,4 @@ All bugs and issues can be posted to
 http://github.com/qnikst/kbdd/issues
 or sent to 
 jabber: qnikst@gentoo.ru
+
