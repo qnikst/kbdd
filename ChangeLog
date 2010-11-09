@@ -1,3 +1,9 @@
+2010-11-09  v0.4 version bump
+			xbindkeys bug fixed
+			inner api fixed
+			xkb layout update bug fixed
+
+
 2010-10-20  v0.2.9 version bump
 
 2010-10-16	Fixing core functionality of the program
