@@ -180,7 +180,7 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 {
     dbg(" EVENT LAYOUT CHANGED %u", layout);
     char * layout_name = NULL;
-    int result =  Kbdd_get_layout_name(layout, &layout_name);
+    int result =  kbdd_get_layout_name(layout, &layout_name);
     if ( ! result ) layout_name = NULL;
     dbg(" Keyboard layout %s", layout_name);
     m_kbdd_service_update_layout((MKbddService *)obj, layout, layout_name);
@@ -277,19 +277,15 @@ int main(int argc, char * argv[])
     dbus_init();
 #endif
 
-    Kbdd_init();
-    Display * display;
-    display = Kbdd_initialize_display();
-    Kbdd_initialize_listeners(display);
+    kbdd_init();
 #ifndef ENABLE_DBUS
-    Kbdd_default_loop(display);
+    kbdd_default_loop(display);
 #else
-    Kbdd_setDisplay(display);
-    Kbdd_setupUpdateCallback(onLayoutUpdate, service);
-    g_timeout_add(100, Kbdd_default_iter, mainloop);
+    kbdd_setupUpdateCallback(onLayoutUpdate, service);
+    g_timeout_add(100, kbdd_default_iter, mainloop);
     g_main_loop_run(mainloop);
 #endif
-    Kbdd_clean();
+    kbdd_free();
     return EXIT_SUCCESS;
 }
 
