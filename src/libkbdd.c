@@ -67,6 +67,7 @@ static void _kbdd_group_names_initialize( );
 static int  _kbdd_add_window(Display * display, Window window);
 static void _kbdd_remove_window(Window window);
 static void _kbdd_proceed_event();
+static void _kbdd_update_window_layout(Window window, unsigned char grp);
 static Display * _kbdd_initialize_display();
 inline void _kbdd_init_windows(Display * display);
 inline void _kbdd_focus_window(Window w);
@@ -201,7 +202,7 @@ kbdd_set_window_layout ( Display * display, Window win )
 }
 
 void 
-kbdd_update_window_layout ( Display * display, Window window, unsigned char grp ) 
+_kbdd_update_window_layout ( Window window, unsigned char grp ) 
 {
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
@@ -355,8 +356,8 @@ _on_xkbEvent(XkbEvent ev)
         case XkbStateNotify:
             dbg( "LIBKBDD state notify event\n");
             grp = ev.state.group;
-            XGetInputFocus( ev.any.display, &focused_win, &revert);
-            kbdd_update_window_layout( ev.any.display, focused_win,grp);
+            //XGetInputFocus( ev.any.display, &focused_win, &revert);
+            _kbdd_update_window_layout( _kbdd.focus_win,grp);
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
