@@ -9,6 +9,7 @@ AM_INIT_AUTOMAKE([kbdd], [0.2.9999])
 AC_SUBST(PACKAGE_URL, [http://github.com/qnikst/kbdd] )
 
 # Checks for programs.
+#CC=${CC-/usr/bin/cgcc}
 AC_PROG_CC
 AC_PROG_RANLIB
 
@@ -62,3 +63,7 @@ AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 
 AC_OUTPUT(Makefile src/Makefile src/dbus/Makefile)
+
+#AM_CFLAGS = -Wall -Waddress-space -Wbitwise -Wcast-to-as -Wcast-truncate -Wcontext \
+#  -Wdecl -Wdo-while -Wenum-mismatch -Wnon-pointer-null -Wold-initializer 
+

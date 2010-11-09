@@ -34,6 +34,7 @@
 #define CLEANMASK(mask) (mask & ~(LockMask))
 #define LENGTH(X)       (sizeof X / sizeof X[0])
 
+
 typedef union {
     int i;
     unsigned int ui;
@@ -62,17 +63,17 @@ typedef struct _KbddStructure {
  * method prototypes
  **/
 static void _kbdd_assign_window(Display *display,Window window);
-static void _kbdd_init_windows(Display * display);
 static void _kbdd_group_names_initialize( );
 static int  _kbdd_add_window(Display * display, Window window);
 static void _kbdd_remove_window(Window window);
-static void _kbdd_clean_groups_info();
 static void _kbdd_proceed_event();
 static Display * _kbdd_initialize_display();
+inline void _kbdd_init_windows(Display * display);
 inline void _kbdd_focus_window(Window w);
 inline void _kbdd_initialize_listeners();
 inline void _kbdd_group_names_initialize();
 inline void _kbdd_inner_iter(Display * display);
+inline void _kbdd_clean_groups_info();
 //xorg events
 static void _on_enterEvent(XEvent *e);
 static void _on_createEvent(XEvent *e);
@@ -151,16 +152,10 @@ kbdd_init( void )
 }
 
 void 
-kbdd_clean( void ) 
+kbdd_free( void ) 
 {
     _kbdd_perwindow_free();//clean per-window storage
     _kbdd_clean_groups_info();//clean groups info
-}
-
-void 
-kbdd_set_display(Display * display)
-{
-    _kbdd.display = display;
 }
 
 Display *
@@ -179,9 +174,9 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
 int 
 kbdd_default_iter(void * data)
 {
-    assert( _display != NULL );
-    while ( XPending( (Display *)_display ) ) 
-        _kbdd_inner_iter((Display *)_display);
+    assert( _kbdd.display != NULL );
+    while ( XPending( _kbdd.display ) ) 
+        _kbdd_inner_iter(_kbdd.display);
     return 1;
 }
 
@@ -190,7 +185,7 @@ kbdd_default_loop(Display * display)
 {
     dbg( "default loop started\n");
     if (display == NULL)
-        display = (Display *)_display;
+        display = _kbdd.display;
     assert(display!=NULL);
 
     while ( 1 ) 
@@ -405,7 +400,7 @@ _kbdd_assign_window(Display * display, Window window)
 }
 
 inline void
-_init_windows(Display * display)
+_kbdd_init_windows(Display * display)
 {
     unsigned int i, num;
     Window d1,d2,*wins = NULL;
@@ -454,7 +449,7 @@ void _set_current_window_layout(const Arg * arg)
 }
 
 inline void 
-kbdd_clean_groups_info( void )
+_kbdd_clean_groups_info( void )
 {
     unsigned char i;
     for (i = 0; i < _group_count; i++ )

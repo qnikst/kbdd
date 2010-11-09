@@ -22,48 +22,34 @@
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 
-//#include "perwindow.h"
+#include "perwindow.h"
 
 
 typedef void (*UpdateCallback)(unsigned int, void *);
 
-/**
- * Initialize subsystem
- */
 void kbdd_init();
-/**
- * Deinitialize subsystem
- */
-void kbdd_clean();
-
-/**
- * Update window layout
- */
-int  kbdd_set_window_layout(Display *,Window); 
-
-/**
- * Update group info to the current one
- */
-void kbdd_update_window_layout(Display *, Window, unsigned char group);
-
-void kbdd_setupUpdateCallback(UpdateCallback, void *);
-
-int  kbdd_get_layout_name( uint32_t id, char ** layout);
-void kbdd_set_current_window_layout ( uint32_t ); 
-void kbdd_set_previous_layout();
-void kbdd_set_next_layout();
-void kbdd_set_display(Display *);
+void kbdd_free();
 Display * kbdd_get_display();
+void kbdd_setupUpdateCallback(UpdateCallback, void *);
+/**
+ * Actions
+ */
+void kbdd_set_group ( uint32_t ); 
+void kbdd_set_previous_group();
+void kbdd_set_next_group();
+
+/**
+ * Get info
+ */
+int  kbdd_get_group_name( uint32_t id, char ** layout);
+//int  kbdd_set_window_layout(Display *,Window); 
+//void kbdd_update_window_layout(Display *, Window, unsigned char group);
+
 /**
  * default main loop that need to make xkbd working
  */
 void * kbdd_default_loop(Display *);
-
-Display * kbdd_initialize_display( );
-
 void kbdd_initialize_listeners( Display * );
-
-void kbdd_setDisplay(Display *);
 int kbdd_default_iter(void *);
 
 #endif
