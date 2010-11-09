@@ -11,6 +11,8 @@ kbbd has dbus interface with next methods:
 
 getLayoutName( uint32 ) - returns string presentation of group name
 set_layout(uint32 )     - set current group
+next_layout             - switch to the next keyboard layout
+prev_layout             - switch to the previous keyboard layout
 
 and events(signals):
 
@@ -21,6 +23,8 @@ so you can change encoding with dbus-send command:
    dbus-send dbus-send --dest=ru.gentoo.KbddService /ru/gentoo/KbddService ru.gentoo.kbdd.set_layout uint32:1
 
 .SH BUGS
-if you find any bug please report to http://github.com/qnikst/kbdd/issues
+For some users meta-keys (like alt or Meta4 stick) but there is not enough
+report data to investigate if this a kbdd bug or not.
+If you find any bug please report to http://github.com/qnikst/kbdd/issues
 .SH AUTORS
 Alexander V. Vershilov 

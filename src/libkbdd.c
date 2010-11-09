@@ -88,7 +88,7 @@ int _xerrordummy(Display *dpy, XErrorEvent *ee);
 
 static volatile UpdateCallback    _updateCallback = NULL;
 static volatile void *            _updateUserdata = NULL;
-static volatile Display *  _display        = NULL;
+//static volatile Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
 //static Window root  = 0;
@@ -230,7 +230,7 @@ kbdd_set_previous_layout( void )
     int revert;
     if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) ) //TODO remove if available
     {
-        uint32_t group = _kbdd_perwindow_get_prev(focused_win);
+        unsigned char group = _kbdd_perwindow_get_prev(focused_win);
         dbg("group %u",group);
         kbdd_set_current_window_layout( group );
     }
@@ -242,7 +242,7 @@ kbdd_set_next_layout( void )
     Window focused_win;
     int revert;
     dbg("set next layout");
-    if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )//TODO remove if available
+    if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )//TODO remove if available
     {
         uint32_t group = _kbdd_perwindow_get(focused_win) + 1;
         if ( group >= _group_count ) 
@@ -482,7 +482,7 @@ _kbdd_initialize_listeners( void )
     dbg("keyboard initialized");
     int scr = DefaultScreen( _kbdd.display );
     _kbdd.root_window = RootWindow( _kbdd.display, scr );
-    dbg("attating to window %u\n",(uint32_t)kbdd.root_window);
+    dbg("attating to window %u\n",(uint32_t)_kbdd.root_window);
     XkbSelectEventDetails( _kbdd.display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
     XSelectInput( _kbdd.display, _kbdd.root_window, root_events);
