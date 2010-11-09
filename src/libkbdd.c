@@ -409,8 +409,10 @@ _kbdd_init_windows(Display * display)
     {
         for ( i=0; i < num; i++ )
         {
+            XSetErrorHandler(_xerrordummy);
             if ( ! XGetWindowAttributes(display, wins[i], &wa) )
                 continue;
+            XSync(display, 0);
             _kbdd_assign_window( display, wins[i] );
         }
         if (wins) XFree(wins);
