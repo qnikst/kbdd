@@ -196,7 +196,9 @@ kbdd_default_loop(Display * display)
 int 
 kbdd_set_window_layout ( Display * display, Window win ) 
 {
+    if ( win == _kbdd.focus_win ) return 1;
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
+    dbg(">>>>>>>>>>>>>>>> SET LAYOUT (%u->%u) <<<<<<<<<<<<<<",(uint32_t)win,group);
     int result = XkbLockGroup(display, XkbUseCoreKbd, group);
     return result;
 }
@@ -214,13 +216,19 @@ _kbdd_update_window_layout ( Window window, unsigned char grp )
 void 
 kbdd_set_current_window_layout ( uint32_t layout) 
 {
-    dbg("set window layout %u",layout);
+    dbg(">>>>>>>>> set window layout %u <<<<<<<<<<<",layout);
     if ( layout < 0 || layout > _group_count ) 
     {
         //TODO throw error
         return;
     }
-    int result = XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
+    Window focused_win;
+    int revert;
+    if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) ) //TODO remove if available
+    {
+        _kbdd_perwindow_put(focused_win, layout);
+    }
+    //int result = XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
 }
 
 void 
