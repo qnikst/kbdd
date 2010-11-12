@@ -50,8 +50,8 @@ typedef struct {
 } Key;
 
 typedef struct _KbddStructure {
-    long w_events;
-    long root_events;
+//    long w_events;
+//    long root_events;
     int haveNames;
     int _xkbEventType;
     Window focus_win;
@@ -196,7 +196,6 @@ kbdd_default_loop(Display * display)
 int 
 kbdd_set_window_layout ( Display * display, Window win ) 
 {
-    if ( win == _kbdd.focus_win ) return 1;
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     dbg(">>>>>>>>>>>>>>>> SET LAYOUT (%u->%u) <<<<<<<<<<<<<<",(uint32_t)win,group);
     int result = XkbLockGroup(display, XkbUseCoreKbd, group);
@@ -327,7 +326,7 @@ _on_focusEvent(XEvent *e)
       int revert;
       XGetInputFocus(ev->display, &focused_win, &revert);
       (void) kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
-      _kbdd_focus_window(focused_win);//real focus
+//      _kbdd_focus_window(focused_win);//real focus
     }
     XSync(ev->display, 0);
 }
@@ -442,8 +441,6 @@ _kbdd_add_window(Display * display, Window window)
     {
         WINDOW_TYPE win = (WINDOW_TYPE)window;
         _kbdd_perwindow_put(win, state.group);
-//        if ( _updateCallback != NULL ) 
-//            _updateCallback(state.group, (void *)_updateUserdata);
     }
     return 0;
 }
@@ -542,6 +539,7 @@ _kbdd_group_names_initialize( void )
 inline void 
 _kbdd_proceed_event(XkbEvent ev)
 {
+    dbg("event %u",ev.type);
     if ( ev.type  == _kbdd._xkbEventType )
         _on_xkbEvent(ev);
     else
