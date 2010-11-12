@@ -226,7 +226,10 @@ kbdd_set_current_window_layout ( uint32_t layout)
     int revert;
     if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) ) //TODO remove if available
     {
-        _kbdd_perwindow_put(focused_win, layout);
+        if (_kbdd.focus_win == focused_win ) 
+          _kbdd_perwindow_put(focused_win, layout);
+        else 
+          XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
     }
     //int result = XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
 }
