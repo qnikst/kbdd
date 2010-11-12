@@ -313,16 +313,19 @@ _on_focusEvent(XEvent *e)
 {
     XSetErrorHandler(_xerrordummy);
     XFocusChangeEvent *ev = &e->xfocus;
-    if (ev->window == _kbdd.focus_win) 
+    if ( ev->window == _kbdd.focus_win 
+            || ev->window == _kbdd.root_window) 
         return;
-    _kbdd_focus_window(ev->window);    
+    if ( ev->type == FocusIn )
+      _kbdd_focus_window(ev->window);    
     dbg("focus event %u", (uint32_t)ev->window);
     {
       Window focused_win;
       int revert;
       XGetInputFocus(ev->display, &focused_win, &revert);
       (void) kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
-//      _kbdd_focus_window(focused_win);//real focus
+      if ( ev->type == FocusIn )
+        _kbdd_focus_window(focused_win);//real focus
     }
     XSync(ev->display, 0);
 }
