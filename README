@@ -1,4 +1,4 @@
-kbdd - kbd daemon
+kbdd - xkb daemon
 ===================
 simple daemon and library to make per window layout
 using XKB(X KeyBoard Extension).
@@ -25,12 +25,12 @@ can be done in next steps:
   make install
 
 configuration options:
-  debug - adds additional debuging info
-  dbus  - enable dbus support
+  enable-debug - [default: disabled] adds additional debuging info
+  enable-dbus  - [default: enabled] tenable dbus support
 
 Running kbdd
 -----------
-to run kbdd you can just run /usr/bin/kbdd to use kbdd in deamon
+to run kbdd you can just run '/usr/bin/kbdd' to use kbdd in deamon
 mode, or '/usr/bin/kbdd -n' to run in verbose mode.
 
 More info
