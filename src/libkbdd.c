@@ -298,7 +298,7 @@ _on_propertyEvent(XEvent *e)
     if (ev->state==0) return;
     if (ev->window == _kbdd.focus_win)
         return;
-    _kbdd_focus_window(ev->window); //TODO change method name
+    _kbdd_focus_window(ev->window);
     dbg("property event");
     int revert;
     Window focused_win;
@@ -371,7 +371,6 @@ _on_xkbEvent(XkbEvent ev)
                 if ( _kbdd.focus_win != focused_win ) 
                     _kbdd_update_window_layout( focused_win, grp);
             }
-            
             _kbdd_update_window_layout( _kbdd.focus_win,grp);
             break;
         case XkbNewKeyboardNotify:
@@ -457,12 +456,12 @@ _kbdd_remove_window(Window window)
 
 
 
-static 
+/*static
 void _set_current_window_layout(const Arg * arg) 
 {
     dbg("inner set window layout");
     kbdd_set_current_window_layout( arg->ui );
-}
+}*/
 
 inline void 
 _kbdd_clean_groups_info( void )
@@ -498,7 +497,7 @@ _kbdd_initialize_listeners( void )
     dbg("keyboard initialized");
     int scr = DefaultScreen( _kbdd.display );
     _kbdd.root_window = RootWindow( _kbdd.display, scr );
-    dbg("attating to window %u\n",(uint32_t)_kbdd.root_window);
+    dbg("attaching to window %u\n",(uint32_t)_kbdd.root_window);
     XkbSelectEventDetails( _kbdd.display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
     XSelectInput( _kbdd.display, _kbdd.root_window, root_events);
