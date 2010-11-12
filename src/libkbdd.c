@@ -89,10 +89,8 @@ int _xerrordummy(Display *dpy, XErrorEvent *ee);
 
 static volatile UpdateCallback    _updateCallback = NULL;
 static volatile void *            _updateUserdata = NULL;
-//static volatile Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
-//static Window root  = 0;
 static int    _group_count;
 static char * * _group_names;
 
@@ -126,7 +124,6 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 
 static void _set_current_window_layout(const Arg *arg);
 
-//#include "keys.h"
 
 /******************************************************************************
  * Interface part
@@ -230,7 +227,6 @@ kbdd_set_current_window_layout ( uint32_t layout)
         else 
           XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
     }
-    //int result = XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
 }
 
 void 
