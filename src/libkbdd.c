@@ -197,7 +197,7 @@ int
 kbdd_set_window_layout ( Display * display, Window win ) 
 {
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
-    dbg(">>>>>>>>>>>>>>>> SET LAYOUT (%u->%u) <<<<<<<<<<<<<<",(uint32_t)win,group);
+    dbg("SET LAYOUT (%u->%u) ", (uint32_t)win,  group);
     int result = XkbLockGroup(display, XkbUseCoreKbd, group);
     return result;
 }
@@ -352,23 +352,30 @@ _on_mappingEvent(XEvent *e)
 {
     dbg("in map request");
     XMappingEvent *ev = &e->xmapping;
-    _kbdd_perwindow_clean();
-    _kbdd_group_names_initialize();
+    if ( ev->request == MappingKeyboard ) {
+      _kbdd_perwindow_clean();
+      _kbdd_group_names_initialize();
+    }
     XRefreshKeyboardMapping(ev);
 }
 
 inline void
 _on_xkbEvent(XkbEvent ev)
 {
-    Window focused_win;
-    int revert;
     uint32_t grp;
     switch (ev.any.xkb_type)
     {
         case XkbStateNotify:
             dbg( "LIBKBDD state notify event\n");
             grp = ev.state.group;
-            //XGetInputFocus( ev.any.display, &focused_win, &revert);
+            { /* # some windows uses more than one windows */
+                Window focused_win;
+                int revert;
+                XGetInputFocus( ev.any.display, &focused_win, &revert);
+                if ( _kbdd.focus_win != focused_win ) 
+                    _kbdd_update_window_layout( focused_win, grp);
+            }
+            
             _kbdd_update_window_layout( _kbdd.focus_win,grp);
             break;
         case XkbNewKeyboardNotify:
