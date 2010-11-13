@@ -30,7 +30,7 @@ configuration options:
 
 (1) if you use git version, you should generate installation 
 installation files: you should use 
-  aclocal && automake --add-missing && autoreconf 
+  aclocal ; autoconf ; automake --add-missing ; autoreconf 
 and then proceed to ordinary installation. Of cause you should need
 to have autotools package installed
 
