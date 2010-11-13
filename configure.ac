@@ -9,7 +9,6 @@ AM_INIT_AUTOMAKE([kbdd], [0.4])
 AC_SUBST(PACKAGE_URL, [http://github.com/qnikst/kbdd] )
 
 # Checks for programs.
-#CC=${CC-/usr/bin/cgcc}
 AC_PROG_CC
 AC_PROG_RANLIB
 
@@ -36,7 +35,7 @@ AC_ARG_ENABLE([dbus],
         [],
         enableval=yes)
 if test "x$enableval" == 'xyes'; then
-    AC_DEFINE([ENABLE_DBUS], [], [Enable providing d-bus object])
+    AC_DEFINE([ENABLE_DBUS], [], [Enable providing d-bus object (enabled by default)])
 
     #Check for dbus-glib
     GLIB_GENMARSHAL=`$PKG_CONFIG glib-2.0 --variable=glib_genmarshal`
@@ -50,7 +49,7 @@ AM_CONDITIONAL(BUILD_DBUS, test "x$enableval" == 'xyes')
 
 
 AC_ARG_ENABLE([debug],
-        AS_HELP_STRING([--enable-debug], [Enable verbose output]),
+        AS_HELP_STRING([--enable-debug], [Enable verbose output (disabled by default)]),
         [],
         enableval=no)
 if test "x$enableval" == 'xyes'; then
