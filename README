@@ -18,7 +18,7 @@ In order to build kbdd you need:
 Installation
 ------------
 Program uses autotools installation system, so installation
-can be done in next steps:
+can be done in next steps (1):
 
   ./configure options
   make 
@@ -27,6 +27,12 @@ can be done in next steps:
 configuration options:
   enable-debug - [default: disabled] adds additional debuging info
   enable-dbus  - [default: enabled] tenable dbus support
+
+(1) if you use git version, you should generate installation 
+installation files: you should use 
+  aclocal && automake --add-missing && autoreconf 
+and then proceed to ordinary installation. Of cause you should need
+to have autotools package installed
 
 Running kbdd
 -----------
