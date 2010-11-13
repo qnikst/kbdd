@@ -31,11 +31,11 @@ PKG_CHECK_MODULES(X11, x11, [], [AC_MSG_ERROR([libX11 not found])])
 AC_SUBST(X11_LIBS)
 
 AC_ARG_ENABLE([dbus], 
-        AS_HELP_STRING([--enable-dbus], [Enable providing D-BUS object]),
+        AS_HELP_STRING([--enable-dbus], [Enable providing D-BUS object [default=enabled]]),
         [],
         enableval=yes)
 if test "x$enableval" == 'xyes'; then
-    AC_DEFINE([ENABLE_DBUS], [], [Enable providing d-bus object (enabled by default)])
+    AC_DEFINE([ENABLE_DBUS], [], [Enable providing d-bus object)])
 
     #Check for dbus-glib
     GLIB_GENMARSHAL=`$PKG_CONFIG glib-2.0 --variable=glib_genmarshal`
@@ -49,7 +49,7 @@ AM_CONDITIONAL(BUILD_DBUS, test "x$enableval" == 'xyes')
 
 
 AC_ARG_ENABLE([debug],
-        AS_HELP_STRING([--enable-debug], [Enable verbose output (disabled by default)]),
+        AS_HELP_STRING([--enable-debug], [Enable verbose output [default=disabled]]),
         [],
         enableval=no)
 if test "x$enableval" == 'xyes'; then
