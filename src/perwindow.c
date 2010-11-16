@@ -17,10 +17,11 @@
  **********************************************************************/
 #include <stdint.h>
 #include <stdlib.h>
-#include "storage.h"
 #include <assert.h>
 #include "common-defs.h"
 #include <glib.h>
+
+#include "perwindow.h"
 
 GHashTable *gStorage = NULL;
 #define GINT_TO_POINTER(i) ((gpointer) (glong) (i))
@@ -34,20 +35,20 @@ void debug();
 #endif
 
 void 
-_kbdd_storage_init() {
+_kbdd_perwindow_init() {
     if ( gStorage!=NULL ) return; 
     gStorage = g_hash_table_new(g_direct_hash, NULL);
 }
 
 void 
-_kbdd_storage_free() {
+_kbdd_perwindow_free() {
     if ( gStorage != NULL ) {
         g_hash_table_destroy(gStorage);
     }
 }
 
 void 
-_kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
+_kbdd_perwindow_put(WINDOW_TYPE win, GROUP_TYPE group)
 {
     assert( gStorage != NULL );
     gpointer key;
@@ -55,7 +56,7 @@ _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
     gpointer pWindow = GUINT_TO_POINTER(win);
     if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
     {
-        dbg("old %lu\n update p %lu\n new group %lu",POINTER_TO_GUINT(value) \
+        dbg("old %lu\n update p %lu\n new group %u",POINTER_TO_GUINT(value) \
                                                     ,POINTER_TO_GUINT(value)<<8 \
                                                     , group & 0xFF );
         value = GUINT_TO_POINTER(((POINTER_TO_GUINT(value) & 0xFF) <<8) | (group & 0xFF));
@@ -70,7 +71,7 @@ _kbdd_storage_put(WINDOW_TYPE win, GROUP_TYPE group)
 }
 
 GROUP_TYPE
-_kbdd_storage_get_prev(WINDOW_TYPE win)
+_kbdd_perwindow_get_prev(WINDOW_TYPE win)
 {
     assert( gStorage != NULL );
     dbg("getprev %u", (uint32_t)win);
@@ -89,7 +90,7 @@ _kbdd_storage_get_prev(WINDOW_TYPE win)
 }
 
 GROUP_TYPE 
-_kbdd_storage_get(WINDOW_TYPE win)
+_kbdd_perwindow_get(WINDOW_TYPE win)
 {
     assert( gStorage != NULL );
     GROUP_TYPE group;
@@ -108,7 +109,7 @@ _kbdd_storage_get(WINDOW_TYPE win)
 }
 
 void 
-_kbdd_storage_remove(WINDOW_TYPE win)
+_kbdd_perwindow_remove(WINDOW_TYPE win)
 {
     assert( gStorage != NULL );
     gpointer key = GUINT_TO_POINTER(win);
@@ -118,7 +119,7 @@ _kbdd_storage_remove(WINDOW_TYPE win)
 
 
 void
-_kbdd_storage_clean() 
+_kbdd_perwindow_clean() 
 {
     assert( gStorage != NULL );
     g_hash_table_remove_all(gStorage);
@@ -130,11 +131,11 @@ void debug() {
     g_hash_table_iter_init (&iter, gStorage);
     int size=g_hash_table_size(gStorage);
     printf("=================\nFirst size: %d\n",size);
-    uint32_t *val;
-    uint32_t *key_;
+    gpointer *val;
+    gpointer *key_;
     while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &val))
     {
-        printf("key %d ---> %d \n",key_,val);
+        printf("key %u ---> %u \n",GPOINTER_TO_UINT(key_),GPOINTER_TO_UINT(val));
     }
     printf("=================\n");
 }

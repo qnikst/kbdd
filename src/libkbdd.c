@@ -129,7 +129,7 @@ Kbdd_init()
     
     _kbdd.forceAssign = 0;
 
-    _kbdd_storage_init(); //initialize per-window storage
+    _kbdd_perwindow_init(); //initialize per-window storage
 }
 
 void 
@@ -143,7 +143,7 @@ Kbdd_clean()
     }
     _group_names[i] = 0;
 
-    _kbdd_storage_free();
+    _kbdd_perwindow_free();
 }
 
 Display * 
@@ -317,7 +317,7 @@ _on_mappingEvent(XEvent *e)
 {
     dbg("in map request");
     XMappingEvent *ev = &e->xmapping;
-    _kbdd_storage_clean();
+    _kbdd_perwindow_clean();
     kbdd_group_names_initialize(ev->display);
     XRefreshKeyboardMapping(ev);
 }
@@ -363,7 +363,7 @@ _on_xkbEvent(XkbEvent ev)
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
-            _kbdd_storage_clean();
+            _kbdd_perwindow_clean();
             /* kbdd_group_names_clean >> */ { 
                 size_t i;
                 for (i = 0; i < _group_count; i++ )
@@ -427,7 +427,7 @@ int Kbdd_add_window(Display * display, Window window)
     if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success ) 
     {
         WINDOW_TYPE win = (WINDOW_TYPE)window;
-        _kbdd_storage_put(win, state.group);
+        _kbdd_perwindow_put(win, state.group);
         if ( _updateCallback != NULL ) 
             _updateCallback(state.group, (void *)_updateUserdata);
     }
@@ -437,12 +437,12 @@ int Kbdd_add_window(Display * display, Window window)
 void Kbdd_remove_window(Window window)
 {
     WINDOW_TYPE win = (WINDOW_TYPE)window;
-    _kbdd_storage_remove(win);
+    _kbdd_perwindow_remove(win);
 }
 
 int Kbdd_set_window_layout ( Display * display, Window win ) 
 {
-    GROUP_TYPE group = _kbdd_storage_get( (WINDOW_TYPE)win );
+    GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     int result = XkbLockGroup(display, XkbUseCoreKbd, group);
     if (result && _updateCallback != NULL) 
         _updateCallback(group, (void *)_updateUserdata);
@@ -453,7 +453,7 @@ void Kbdd_update_window_layout ( Display * display, Window window, unsigned char
 {
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
-    _kbdd_storage_put(win, g);
+    _kbdd_perwindow_put(win, g);
     if ( _updateCallback != NULL ) 
         _updateCallback(g, (void *)_updateUserdata);
 }
@@ -472,7 +472,7 @@ Kbdd_set_previous_layout()
     dbg("set previous layout");
     if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )
     {
-        uint32_t group = _kbdd_storage_get_prev(focused_win);
+        uint32_t group = _kbdd_perwindow_get_prev(focused_win);
         dbg("group %u",group);
         Kbdd_set_current_window_layout( group );
     }
@@ -487,7 +487,7 @@ Kbdd_set_next_layout()
     dbg("set next layout");
     if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )
     {
-        uint32_t group = _kbdd_storage_get(focused_win) + 1;
+        uint32_t group = _kbdd_perwindow_get(focused_win) + 1;
         if ( group >= _group_count ) 
             group = 0;
         Kbdd_set_current_window_layout( group );
