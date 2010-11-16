@@ -277,7 +277,7 @@ int main(int argc, char * argv[])
     dbus_init();
 #endif
 
-    Kbdd_init();
+    kbdd_init();
     Display * display;
     display = Kbdd_initialize_display();
     Kbdd_initialize_listeners(display);

@@ -30,7 +30,7 @@ typedef void (*UpdateCallback)(unsigned int, void *);
 /**
  * Initialize subsystem
  */
-void Kbdd_init();
+void kbdd_init();
 /**
  * Deinitialize subsystem
  */

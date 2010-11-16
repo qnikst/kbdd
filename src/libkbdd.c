@@ -107,7 +107,7 @@ static void _set_current_window_layout(const Arg *arg);
  *****************************************************************************/
 
 void 
-Kbdd_init()
+kbdd_init(void)
 {
     _kbdd.w_events = EnterWindowMask 
                    | FocusChangeMask
