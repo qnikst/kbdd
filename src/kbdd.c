@@ -289,7 +289,7 @@ int main(int argc, char * argv[])
     g_timeout_add(100, Kbdd_default_iter, mainloop);
     g_main_loop_run(mainloop);
 #endif
-    Kbdd_clean();
+    kbdd_clean();
     return EXIT_SUCCESS;
 }
 

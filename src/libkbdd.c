@@ -130,7 +130,7 @@ kbdd_init(void)
 }
 
 void 
-Kbdd_clean()
+kbdd_clean()
 {
     size_t i;
     for (i = 0; i < _group_count; i++ )
