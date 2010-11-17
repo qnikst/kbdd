@@ -272,7 +272,7 @@ _on_propertyEvent(XEvent *e)
     int revert;
     Window focused_win;
     XGetInputFocus(ev->display, &focused_win, &revert);
-    Kbdd_set_window_layout(ev->display, /*ev->window,*/ focused_win);
+    kbdd_set_window_layout(ev->display, /*ev->window,*/ focused_win);
     XSync(ev->display, 0);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
@@ -290,7 +290,7 @@ _on_focusEvent(XEvent *e)
     Window focused_win;
     int revert;
     XGetInputFocus(ev->display, &focused_win, &revert);
-    Kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
+    kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
     XSync(ev->display, 0);
 }
 
@@ -437,7 +437,8 @@ void Kbdd_remove_window(Window window)
     _kbdd_perwindow_remove(win);
 }
 
-int Kbdd_set_window_layout ( Display * display, Window win ) 
+int 
+kbdd_set_window_layout ( Display * display, Window win ) 
 {
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     int result = XkbLockGroup(display, XkbUseCoreKbd, group);

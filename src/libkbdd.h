@@ -24,7 +24,6 @@
 
 #include "perwindow.h"
 
-
 typedef void (*UpdateCallback)(unsigned int, void *);
 
 /**
@@ -39,7 +38,7 @@ void kbdd_clean();
 /**
  * Update window layout
  */
-int  Kbdd_set_window_layout(Display *,Window); 
+int  kbdd_set_window_layout(Display *,Window); 
 
 /**
  * Update group info to the current one
