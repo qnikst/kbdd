@@ -540,7 +540,7 @@ kbdd_group_names_initialize(Display * display)
 
 
 int  
-Kbdd_get_layout_name( uint32_t id, char ** layout)
+kbdd_get_layout_name( uint32_t id, char ** layout)
 {
   if ( id < 0 || id>=_group_count ) return 0;
   dbg( "layout: %s",_group_names[id] );
