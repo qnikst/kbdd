@@ -43,7 +43,7 @@ int  kbdd_set_window_layout(Display *,Window);
 /**
  * Update group info to the current one
  */
-void Kbdd_update_window_layout(Display *, Window, unsigned char group);
+void kbdd_update_window_layout(Display *, Window, unsigned char group);
 
 /**
  *  Remove window info from storage

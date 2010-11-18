@@ -356,7 +356,7 @@ _on_xkbEvent(XkbEvent ev)
             dbg( "LIBKBDD state notify event\n");
             grp = ev.state.group;
             XGetInputFocus( ev.any.display, &focused_win, &revert);
-            Kbdd_update_window_layout( ev.any.display, focused_win,grp);
+            kbdd_update_window_layout( ev.any.display, focused_win,grp);
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
@@ -447,7 +447,8 @@ kbdd_set_window_layout ( Display * display, Window win )
     return result;
 }
 
-void Kbdd_update_window_layout ( Display * display, Window window, unsigned char grp ) 
+void 
+kbdd_update_window_layout ( Display * display, Window window, unsigned char grp ) 
 {
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
