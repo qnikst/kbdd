@@ -33,7 +33,7 @@
 #define LENGTH(X)       (sizeof X / sizeof X[0])
 
 //>>prototypes
-static void  kbdd_group_names_initialize(Display *display);
+inline void  _kbdd_group_names_initialize(Display *display);
 __inline__ void _inner_iter(Display * display);
 __inline__ void _assign_window(Display *display,Window window);
 __inline__ void _init_windows(Display * display);
@@ -165,7 +165,7 @@ void Kbdd_initialize_listeners( Display * display )
     dbg("Kbdd_initialize_listeners");
     assert(display!=NULL);
     dbg("keyboard initialized");
-    kbdd_group_names_initialize(display);
+    _kbdd_group_names_initialize(display);
     int scr = DefaultScreen( display );
     root = RootWindow( display, scr );
     dbg("attating to window %u\n",(uint32_t)root);
@@ -309,7 +309,7 @@ _on_mappingEvent(XEvent *e)
     dbg("in map request");
     XMappingEvent *ev = &e->xmapping;
     _kbdd_perwindow_clean();
-    kbdd_group_names_initialize(ev->display);
+    _kbdd_group_names_initialize(ev->display);
     XRefreshKeyboardMapping(ev);
 }
 
@@ -364,7 +364,7 @@ _on_xkbEvent(XkbEvent ev)
                 }
                 _group_names[i] = 0;
             } /* << kbdd_group_names_clean */
-            kbdd_group_names_initialize( ev.any.display );
+            _kbdd_group_names_initialize( ev.any.display );
             break;
         default:
             break;
@@ -499,11 +499,11 @@ void _set_current_window_layout(const Arg * arg)
  * Group names functions
  */
 
-static void 
-kbdd_group_names_initialize(Display * display)
+inline void 
+_kbdd_group_names_initialize(Display * display)
 {
-    
     dbg("initializing keyboard");
+    assert( display != NULL );
     XkbDescRec * desc = XkbAllocKeyboard();
     assert(desc != NULL);
     XkbGetControls(display, XkbAllControlsMask, desc);
