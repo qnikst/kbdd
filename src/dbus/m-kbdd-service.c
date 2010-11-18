@@ -150,7 +150,7 @@ m_kbdd_service_next_layout(MKbddService *obj, GError ** error)
 int 
 m_kbdd_service_prev_layout(MKbddService *obj, GError ** error)
 {
-    Kbdd_set_previous_layout();
+    kbdd_set_previous_layout();
     return 1;
 }
 

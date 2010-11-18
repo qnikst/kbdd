@@ -465,7 +465,7 @@ kbdd_set_current_window_layout ( uint32_t layout)
 }
 
 void 
-Kbdd_set_previous_layout()
+kbdd_set_previous_layout(void)
 {
     Window focused_win;
     int revert;
