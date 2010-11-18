@@ -34,7 +34,7 @@
 
 //>>prototypes
 inline void  _kbdd_group_names_initialize(Display *display);
-__inline__ void _inner_iter(Display * display);
+inline void  _kbdd_inner_iter(Display * display);
 __inline__ void _assign_window(Display *display,Window window);
 __inline__ void _init_windows(Display * display);
 inline void _kbdd_proceed_event(XkbEvent ev);
@@ -186,7 +186,7 @@ Kbdd_default_iter(void * data)
 {
     assert( _display != NULL );
     while ( XPending( (Display *)_display ) ) 
-        _inner_iter((Display *)_display);
+        _kbdd_inner_iter((Display *)_display);
     return 1;
 }
 
@@ -199,7 +199,7 @@ Kbdd_default_loop(Display * display)
     assert(display!=NULL);
 
     while ( 1 ) 
-        _inner_iter((Display *)display);
+        _kbdd_inner_iter((Display *)display);
 }
 
 
@@ -216,8 +216,8 @@ _kbdd_proceed_event(XkbEvent ev)
             handler[ev.type](&ev.core);
 }
 
-__inline__
-void _inner_iter(Display * display)
+inline void
+_kbdd_inner_iter(Display * display)
 {
     assert(display != NULL);
     Window focused_win;
