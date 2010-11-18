@@ -54,6 +54,7 @@ typedef struct _KbddStructure {
     int haveNames;
     int _xkbEventType;
     Window focus_win;
+    Window root_window;
 } KbddStructure;
 
 
@@ -63,7 +64,6 @@ static volatile void *            _updateUserdata = NULL;
 volatile static Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
-static Window root  = 0;
 static int    _group_count;
 static char * * _group_names;
 
@@ -143,6 +143,7 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
 
 /**
  * @global root_events
+ * @global _kbdd
  */
 void Kbdd_initialize_listeners( Display * display )
 {
@@ -151,11 +152,11 @@ void Kbdd_initialize_listeners( Display * display )
     dbg("keyboard initialized");
     _kbdd_group_names_initialize(display);
     int scr = DefaultScreen( display );
-    root = RootWindow( display, scr );
-    dbg("attating to window %u\n",(uint32_t)root);
+    _kbdd.root_window = RootWindow( display, scr );
+    dbg("attating to window %u\n",(uint32_t)_kbdd.root_window);
     XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
-    XSelectInput( display, root, root_events);
+    XSelectInput( display, _kbdd.root_window, root_events);
     _init_windows(display);
 }
 
@@ -279,7 +280,7 @@ _on_enterEvent(XEvent *e)
     XSetErrorHandler(_xerrordummy);
     XCrossingEvent *ev = &e->xcrossing;
     if ( (ev->mode != NotifyNormal || ev->detail == NotifyInferior) 
-            && ev->window != root ) 
+            && ev->window != _kbdd.root_window ) 
         return;
     _focus(ev->window);
     XSync(ev->display, 0);
@@ -366,7 +367,7 @@ _init_windows(Display * display)
     unsigned int i, num;
     Window d1,d2,*wins = NULL;
     XWindowAttributes wa;
-    if ( XQueryTree(display, root, &d1, &d2, &wins, &num) )
+    if ( XQueryTree(display, _kbdd.root_window, &d1, &d2, &wins, &num) )
     {
         for ( i=0; i < num; i++ )
         {
