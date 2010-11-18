@@ -33,8 +33,9 @@
 #define LENGTH(X)       (sizeof X / sizeof X[0])
 
 //>>prototypes
-inline void  _kbdd_group_names_initialize(Display *display);
+inline void  _kbdd_group_names_initialize();
 inline void  _kbdd_inner_iter(Display * display);
+inline void  _kbdd_clean_groups_info();
 __inline__ void _assign_window(Display *display,Window window);
 __inline__ void _init_windows(Display * display);
 static Display *  _kbdd_initialize_display();
@@ -64,10 +65,8 @@ typedef struct _KbddStructure {
 static volatile UpdateCallback    _updateCallback = NULL;
 static volatile void *            _updateUserdata = NULL;
 
-volatile static Display *  _display        = NULL;
-
 static KbddStructure       _kbdd;
-static int    _group_count;
+static unsigned char    _group_count;
 static char * * _group_names;
 
 static void (*handler[LASTEvent]) (XEvent *) = {
@@ -110,20 +109,14 @@ kbdd_init( void )
     _kbdd_perwindow_init(); //initialize per-window storage
     _kbdd.display = _kbdd_initialize_display();
     _kbdd_initialize_listeners();
+    _kbdd_group_names_initialize();
 }
 
 void 
 kbdd_clean( void )
 {
-    size_t i;
-    for (i = 0; i < _group_count; i++ )
-    {
-        if ( _group_names[i] != NULL) 
-            free( _group_names[i] );
-    }
-    _group_names[i] = 0;
-
     _kbdd_perwindow_free();
+    _kbdd_clean_groups_info();
 }
 
 Display * 
@@ -155,7 +148,6 @@ void _kbdd_initialize_listeners( Display * display )
     dbg("Kbdd_initialize_listeners");
     assert(display!=NULL);
     dbg("keyboard initialized");
-    _kbdd_group_names_initialize(display);
     int scr = DefaultScreen( display );
     _kbdd.root_window = RootWindow( display, scr );
     dbg("attating to window %u\n",(uint32_t)_kbdd.root_window);
@@ -296,7 +288,7 @@ _on_mappingEvent(XEvent *e)
     dbg("in map request");
     XMappingEvent *ev = &e->xmapping;
     _kbdd_perwindow_clean();
-    _kbdd_group_names_initialize(ev->display);
+    _kbdd_group_names_initialize();
     XRefreshKeyboardMapping(ev);
 }
 
@@ -324,16 +316,8 @@ _on_xkbEvent(XkbEvent ev)
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
             _kbdd_perwindow_clean();
-            /* kbdd_group_names_clean >> */ { 
-                size_t i;
-                for (i = 0; i < _group_count; i++ )
-                {
-                    if ( _group_names[i] != NULL) 
-                        free( _group_names[i] );
-                }
-                _group_names[i] = 0;
-            } /* << kbdd_group_names_clean */
-            _kbdd_group_names_initialize( ev.any.display );
+            _kbdd_clean_groups_info();
+            _kbdd_group_names_initialize();
             break;
         default:
             break;
@@ -482,8 +466,9 @@ kbdd_set_next_layout()
  */
 
 inline void 
-_kbdd_group_names_initialize(Display * display)
+_kbdd_group_names_initialize()
 {
+    Display * display = _kbdd.display;
     dbg("initializing keyboard");
     assert( display != NULL );
     XkbDescRec * desc = XkbAllocKeyboard();
