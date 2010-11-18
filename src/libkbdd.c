@@ -37,6 +37,7 @@ static void  kbdd_group_names_initialize(Display *display);
 __inline__ void _inner_iter(Display * display);
 __inline__ void _assign_window(Display *display,Window window);
 __inline__ void _init_windows(Display * display);
+inline void _kbdd_proceed_event(XkbEvent ev);
 static void _on_enterEvent(XEvent *e);
 static void _on_createEvent(XEvent *e);
 static void _on_destroyEvent(XEvent *e);
@@ -205,27 +206,24 @@ Kbdd_default_loop(Display * display)
 /******************************************************************************
  *  Inner iterations
  *****************************************************************************/
+inline void
+_kbdd_proceed_event(XkbEvent ev)
+{
+    if (ev.type == _kbdd._xkbEventType )
+        _on_xkbEvent(ev);
+    else
+        if ( handler[ev.type] )
+            handler[ev.type](&ev.core);
+}
+
 __inline__
 void _inner_iter(Display * display)
 {
     assert(display != NULL);
     Window focused_win;
     XkbEvent ev;
-    int revert;
-    uint32_t grp;
     XNextEvent( display, &ev.core);
-    if ( ev.type == _kbdd._xkbEventType )
-    {
-        dbg("xkbEvent");
-        _on_xkbEvent(ev);
-    }
-    else 
-    {
-        if ( handler[ev.type] )
-            handler[ev.type](&ev.core);
-        else 
-            dbg("doesn't handle");
-    }
+    _kbdd_proceed_event(ev);
 }
 
 /**
