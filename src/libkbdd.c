@@ -78,8 +78,8 @@ volatile static Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
 static Window root  = 0;
-int    _group_count;
-char * * _group_names;
+static int    _group_count;
+static char * * _group_names;
 
 static void (*handler[LASTEvent]) (XEvent *) = {
     [EnterNotify]    = _on_enterEvent,
