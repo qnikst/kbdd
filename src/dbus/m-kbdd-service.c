@@ -209,6 +209,6 @@ m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError **error)
 {
     //TODO check min max value
     dbg("dbus-set layout %u",value);
-    Kbdd_set_current_window_layout(value);
+    kbdd_set_current_window_layout(value);
     return 1;
 }

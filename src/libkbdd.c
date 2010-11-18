@@ -457,7 +457,8 @@ kbdd_update_window_layout ( Display * display, Window window, unsigned char grp 
         _updateCallback(g, (void *)_updateUserdata);
 }
 
-void Kbdd_set_current_window_layout ( uint32_t layout) 
+void 
+kbdd_set_current_window_layout ( uint32_t layout) 
 {
     dbg("set window layout %u",layout);
     int result = XkbLockGroup( (Display *)_display, XkbUseCoreKbd, layout);
@@ -473,7 +474,7 @@ Kbdd_set_previous_layout()
     {
         uint32_t group = _kbdd_perwindow_get_prev(focused_win);
         dbg("group %u",group);
-        Kbdd_set_current_window_layout( group );
+        kbdd_set_current_window_layout( group );
     }
     
 }
@@ -489,7 +490,7 @@ Kbdd_set_next_layout()
         uint32_t group = _kbdd_perwindow_get(focused_win) + 1;
         if ( group >= _group_count ) 
             group = 0;
-        Kbdd_set_current_window_layout( group );
+        kbdd_set_current_window_layout( group );
     }
 }
 
@@ -497,7 +498,7 @@ static
 void _set_current_window_layout(const Arg * arg) 
 {
     dbg("inner set window layout");
-    Kbdd_set_current_window_layout( arg->ui );
+    kbdd_set_current_window_layout( arg->ui );
 }
 /**
  * Group names functions
