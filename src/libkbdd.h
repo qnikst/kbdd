@@ -52,7 +52,7 @@ void kbdd_update_window_layout(Display *, Window, unsigned char group);
 void Kbdd_remove_window(Window);
 
 
-void Kbdd_setupUpdateCallback(UpdateCallback, void *);
+void kbdd_setupUpdateCallback(UpdateCallback, void *);
 
 int  Kbdd_get_layout_name( uint32_t id, char ** layout);
 void Kbdd_set_current_window_layout ( uint32_t ); 

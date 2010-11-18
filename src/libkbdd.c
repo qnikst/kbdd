@@ -157,7 +157,7 @@ Kbdd_initialize_display( )
 }
 
 void 
-Kbdd_setupUpdateCallback(UpdateCallback callback,void * userData ) 
+kbdd_setupUpdateCallback(UpdateCallback callback,void * userData ) 
 {
     _updateCallback = callback;
     _updateUserdata = userData;

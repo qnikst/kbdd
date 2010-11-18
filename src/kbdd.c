@@ -285,7 +285,7 @@ int main(int argc, char * argv[])
     Kbdd_default_loop(display);
 #else
     Kbdd_setDisplay(display);
-    Kbdd_setupUpdateCallback(onLayoutUpdate, service);
+    kbdd_setupUpdateCallback(onLayoutUpdate, service);
     g_timeout_add(100, Kbdd_default_iter, mainloop);
     g_main_loop_run(mainloop);
 #endif
