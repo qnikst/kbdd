@@ -64,8 +64,6 @@ typedef struct {
 } Key;
 
 typedef struct _KbddStructure {
-    long w_events;
-    long root_events;
     int haveNames;
     int _xkbEventType;
     Window focus_win;
@@ -94,6 +92,18 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 };
 
 static void _set_current_window_layout(const Arg *arg);
+const static long w_events = EnterWindowMask
+                           | FocusChangeMask
+                           | PropertyChangeMask
+                           | StructureNotifyMask
+                           ;
+const static long root_events = StructureNotifyMask
+                              | SubstructureNotifyMask
+                              | LeaveWindowMask
+                              | EnterWindowMask
+                              | FocusChangeMask
+                              | KeymapStateMask;
+                              ;
 #include "keys.h"
 
 /******************************************************************************
@@ -109,23 +119,6 @@ static void _set_current_window_layout(const Arg *arg);
 void 
 kbdd_init(void)
 {
-    _kbdd.w_events = EnterWindowMask 
-                   | FocusChangeMask
-                   | PropertyChangeMask
-                   | StructureNotifyMask
-//                   | KeyPressMask
-//                   | SubstructureNotifyMask
-                   ;
-    _kbdd.root_events = StructureNotifyMask
-                      | SubstructureNotifyMask
-                      | PropertyChangeMask
-                      | LeaveWindowMask
-                      | EnterWindowMask
-                      | FocusChangeMask
-                      | KeymapStateMask
-//                      | KeyPressMask;
-                      ;
-    
     _kbdd_perwindow_init(); //initialize per-window storage
 }
 
@@ -163,6 +156,9 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
     _updateUserdata = userData;
 }
 
+/**
+ * @global root_events
+ */
 void Kbdd_initialize_listeners( Display * display )
 {
     dbg("Kbdd_initialize_listeners");
@@ -174,7 +170,7 @@ void Kbdd_initialize_listeners( Display * display )
     dbg("attating to window %u\n",(uint32_t)root);
     XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
-    XSelectInput( display, root, _kbdd.root_events);
+    XSelectInput( display, root, root_events);
     _init_windows(display);
 }
 
@@ -385,6 +381,7 @@ _xerrordummy(Display *dpy, XErrorEvent *ee)
 }
 /**
  * Kbbdd inner actions
+ * global w_events
  */
 __inline__
 void _assign_window(Display * display, Window window)
@@ -395,7 +392,7 @@ void _assign_window(Display * display, Window window)
     XSetErrorHandler(_xerrordummy);
     if ( ! XGetWindowAttributes(display,window,&wa) ) 
         return;
-    XSelectInput( display, window, _kbdd.w_events);
+    XSelectInput( display, window, w_events);
     XSync(display, 0);
 }
 
