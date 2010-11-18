@@ -158,7 +158,7 @@ int
 m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 {
     //Not yet implements (and I think will never be)
-    *error = "feature not implemented yeti\0";
+    //*error = "feature not implemented yeti\0";
     return 0;
 }
 
