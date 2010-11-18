@@ -480,7 +480,7 @@ kbdd_set_previous_layout(void)
 }
 
 void 
-Kbdd_set_next_layout()
+kbdd_set_next_layout()
 {
     Window focused_win;
     int revert;

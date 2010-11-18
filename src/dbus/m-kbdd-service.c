@@ -143,7 +143,7 @@ m_kbdd_service_get_layout(MKbddService * obj, unsigned int * valueOut, GError **
 int
 m_kbdd_service_next_layout(MKbddService *obj, GError ** error) 
 {
-    Kbdd_set_next_layout();
+    kbdd_set_next_layout();
     return 1;
 }
 
