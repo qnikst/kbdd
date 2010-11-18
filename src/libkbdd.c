@@ -50,20 +50,6 @@ int _xerrordummy(Display *dpy, XErrorEvent *ee);
 __inline__ void _on_xkbEvent(XkbEvent ev);
 //<<prototypes
 
-typedef union {
-    int i;
-    unsigned int ui;
-    float f;
-    const void *v;
-} Arg;
-
-typedef struct {
-    unsigned int mod;
-    KeySym keysym;
-    void (*func)(const Arg *);
-    const Arg arg;
-} Key;
-
 typedef struct _KbddStructure {
     int haveNames;
     int _xkbEventType;
@@ -90,10 +76,8 @@ static void (*handler[LASTEvent]) (XEvent *) = {
     [CreateNotify]   = _on_createEvent,
     [MappingNotify]  = _on_mappingEvent,
 //    [KeymapNotify]   = _on_mappingEvent
-//    [KeyPress]       = _on_keypressEvent
 };
 
-static void _set_current_window_layout(const Arg *arg);
 const static long w_events = EnterWindowMask
                            | FocusChangeMask
                            | PropertyChangeMask
@@ -106,7 +90,6 @@ const static long root_events = StructureNotifyMask
                               | FocusChangeMask
                               | KeymapStateMask;
                               ;
-#include "keys.h"
 
 /******************************************************************************
  * Interface part
@@ -315,24 +298,6 @@ _on_mappingEvent(XEvent *e)
 }
 
 static void 
-_on_keypressEvent(XEvent *e)
-{
-    /*
-    unsigned int i;
-
-    KeySym keysym;
-    XKeyEvent *ev;
-    ev = &e->xkey;
-    keysym = XKeycodeToKeysym(ev->display, ev->keycode, 0);
-    for ( i = 0; i < LENGTH(keys); i++ )
-        if (keysym == keys[i].keysym
-                && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
-                && keys[i].func)
-            keys[i].func(&(keys[i].arg));
-            */
-}
-
-static void 
 _focus(Window w) 
 {
     if (w) 
@@ -490,12 +455,6 @@ kbdd_set_next_layout()
     }
 }
 
-static 
-void _set_current_window_layout(const Arg * arg) 
-{
-    dbg("inner set window layout");
-    kbdd_set_current_window_layout( arg->ui );
-}
 /**
  * Group names functions
  */
