@@ -278,12 +278,11 @@ int main(int argc, char * argv[])
 #endif
 
     kbdd_init();
-    Display * display;
 #ifndef ENABLE_DBUS
-    Kbdd_default_loop(display);
+    kbdd_default_loop(display);
 #else
     kbdd_setupUpdateCallback(onLayoutUpdate, service);
-    g_timeout_add(100, Kbdd_default_iter, mainloop);
+    g_timeout_add(100, kbdd_default_iter, mainloop);
     g_main_loop_run(mainloop);
 #endif
     kbdd_clean();

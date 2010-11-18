@@ -161,7 +161,7 @@ void _kbdd_initialize_listeners( Display * display )
  * @global _kbdd
  */
 int 
-Kbdd_default_iter(void * data)
+kbdd_default_iter(void * data)
 {
     assert( _kbdd.display != NULL );
     while ( XPending( _kbdd.display ) ) 
@@ -170,7 +170,7 @@ Kbdd_default_iter(void * data)
 }
 
 void * 
-Kbdd_default_loop(Display * display) 
+kbdd_default_loop(Display * display) 
 {
     dbg( "default loop started\n");
     if (display == NULL)

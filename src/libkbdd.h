@@ -61,9 +61,9 @@ void kbdd_set_next_layout();
 /**
  * default main loop that need to make xkbd working
  */
-void * Kbdd_default_loop();
+void * kbdd_default_loop();
 
-int Kbdd_default_iter(void *);
+int kbdd_default_iter(void *);
 
 #endif
 //vim:ts=4:expandtab
