@@ -37,6 +37,8 @@ inline void  _kbdd_group_names_initialize(Display *display);
 inline void  _kbdd_inner_iter(Display * display);
 __inline__ void _assign_window(Display *display,Window window);
 __inline__ void _init_windows(Display * display);
+static Display *  _kbdd_initialize_display();
+static void _kbdd_initialize_listeners();
 inline void _kbdd_proceed_event(XkbEvent ev);
 static void _on_enterEvent(XEvent *e);
 static void _on_createEvent(XEvent *e);
@@ -54,6 +56,7 @@ typedef struct _KbddStructure {
     int haveNames;
     int _xkbEventType;
     Window focus_win;
+    Display * display;
     Window root_window;
 } KbddStructure;
 
@@ -102,13 +105,15 @@ const static long root_events = StructureNotifyMask
  *****************************************************************************/
 
 void 
-kbdd_init(void)
+kbdd_init( void )
 {
     _kbdd_perwindow_init(); //initialize per-window storage
+    _kbdd.display = _kbdd_initialize_display();
+    _kbdd_initialize_listeners();
 }
 
 void 
-kbdd_clean()
+kbdd_clean( void )
 {
     size_t i;
     for (i = 0; i < _group_count; i++ )
@@ -122,7 +127,7 @@ kbdd_clean()
 }
 
 Display * 
-Kbdd_initialize_display( )
+_kbdd_initialize_display( )
 {
     Display * display;
     int xkbEventType,xkbError,  reason_rtrn;
@@ -145,7 +150,7 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
  * @global root_events
  * @global _kbdd
  */
-void Kbdd_initialize_listeners( Display * display )
+void _kbdd_initialize_listeners( Display * display )
 {
     dbg("Kbdd_initialize_listeners");
     assert(display!=NULL);
@@ -160,18 +165,15 @@ void Kbdd_initialize_listeners( Display * display )
     _init_windows(display);
 }
 
-void Kbdd_setDisplay(Display * display)
-{
-    assert(display != NULL);
-    _display = display;
-}
-
+/**
+ * @global _kbdd
+ */
 int 
 Kbdd_default_iter(void * data)
 {
-    assert( _display != NULL );
-    while ( XPending( (Display *)_display ) ) 
-        _kbdd_inner_iter((Display *)_display);
+    assert( _kbdd.display != NULL );
+    while ( XPending( _kbdd.display ) ) 
+        _kbdd_inner_iter(_kbdd.display);
     return 1;
 }
 
@@ -180,11 +182,11 @@ Kbdd_default_loop(Display * display)
 {
     dbg( "default loop started\n");
     if (display == NULL)
-        display = (Display *)_display;
+        display = _kbdd.display;
     assert(display!=NULL);
 
     while ( 1 ) 
-        _kbdd_inner_iter((Display *)display);
+        _kbdd_inner_iter(display);
 }
 
 
@@ -423,7 +425,7 @@ void
 kbdd_set_current_window_layout ( uint32_t layout) 
 {
     dbg("set window layout %u",layout);
-    int result = XkbLockGroup( (Display *)_display, XkbUseCoreKbd, layout);
+    int result = XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
 }
 
 void 
@@ -432,7 +434,7 @@ kbdd_set_previous_layout(void)
     Window focused_win;
     int revert;
     dbg("set previous layout");
-    if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )
+    if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
     {
         uint32_t group = _kbdd_perwindow_get_prev(focused_win);
         dbg("group %u",group);
@@ -441,13 +443,32 @@ kbdd_set_previous_layout(void)
     
 }
 
+
+/**
+ * @global _group_count
+ * @global _group_names
+ */
+inline void
+_kbdd_clean_groups_info( void) 
+{
+    unsigned char i;
+    for (i = 0; i < _group_count; i++ )
+    {
+        if ( _group_names[i] != NULL) 
+            free( _group_names[i] );
+        _group_names[i] = NULL;
+    }
+    _group_count = 0;
+} 
+
+
 void 
 kbdd_set_next_layout()
 {
     Window focused_win;
     int revert;
     dbg("set next layout");
-    if ( XGetInputFocus( (Display *)_display, &focused_win, &revert) )
+    if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
     {
         uint32_t group = _kbdd_perwindow_get(focused_win) + 1;
         if ( group >= _group_count ) 

@@ -279,12 +279,9 @@ int main(int argc, char * argv[])
 
     kbdd_init();
     Display * display;
-    display = Kbdd_initialize_display();
-    Kbdd_initialize_listeners(display);
 #ifndef ENABLE_DBUS
     Kbdd_default_loop(display);
 #else
-    Kbdd_setDisplay(display);
     kbdd_setupUpdateCallback(onLayoutUpdate, service);
     g_timeout_add(100, Kbdd_default_iter, mainloop);
     g_main_loop_run(mainloop);

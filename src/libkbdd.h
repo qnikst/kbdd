@@ -63,11 +63,6 @@ void kbdd_set_next_layout();
  */
 void * Kbdd_default_loop();
 
-Display * Kbdd_initialize_display( );
-
-void Kbdd_initialize_listeners( Display * );
-
-void Kbdd_setDisplay(Display *);
 int Kbdd_default_iter(void *);
 
 #endif
