@@ -71,8 +71,9 @@ typedef struct _KbddStructure {
 } KbddStructure;
 
 
-volatile UpdateCallback    _updateCallback = NULL;
-volatile void *            _updateUserdata = NULL;
+static volatile UpdateCallback    _updateCallback = NULL;
+static volatile void *            _updateUserdata = NULL;
+
 volatile static Display *  _display        = NULL;
 
 static KbddStructure       _kbdd;
