@@ -36,8 +36,9 @@
 inline void  _kbdd_group_names_initialize();
 inline void  _kbdd_inner_iter(Display * display);
 inline void  _kbdd_clean_groups_info();
-__inline__ void _assign_window(Display *display,Window window);
+inline void _kbdd_assign_window(Display *display,Window window);
 __inline__ void _init_windows(Display * display);
+static void _kbdd_update_window_layout(Window window, unsigned char grp);
 static Display *  _kbdd_initialize_display();
 static void _kbdd_initialize_listeners();
 inline void _kbdd_proceed_event(XkbEvent ev);
@@ -146,15 +147,15 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
 void _kbdd_initialize_listeners( Display * display )
 {
     dbg("Kbdd_initialize_listeners");
-    assert(display!=NULL);
+    assert(_kbdd.display!=NULL);
     dbg("keyboard initialized");
-    int scr = DefaultScreen( display );
-    _kbdd.root_window = RootWindow( display, scr );
+    int scr = DefaultScreen( _kbdd.display );
+    _kbdd.root_window = RootWindow( _kbdd.display, scr );
     dbg("attating to window %u\n",(uint32_t)_kbdd.root_window);
-    XkbSelectEventDetails( display, XkbUseCoreKbd, XkbStateNotify,
+    XkbSelectEventDetails( _kbdd.display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
-    XSelectInput( display, _kbdd.root_window, root_events);
-    _init_windows(display);
+    XSelectInput(_kbdd.display, _kbdd.root_window, root_events);
+    _init_windows(_kbdd.display);
 }
 
 /**
@@ -311,7 +312,7 @@ _on_xkbEvent(XkbEvent ev)
             dbg( "LIBKBDD state notify event\n");
             grp = ev.state.group;
             XGetInputFocus( ev.any.display, &focused_win, &revert);
-            kbdd_update_window_layout( ev.any.display, focused_win,grp);
+            _kbdd_update_window_layout( focused_win, grp);
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
@@ -334,8 +335,8 @@ _xerrordummy(Display *dpy, XErrorEvent *ee)
  * Kbbdd inner actions
  * global w_events
  */
-__inline__
-void _assign_window(Display * display, Window window)
+inline void 
+_kbdd_assign_window(Display * display, Window window)
 {
     static XWindowAttributes wa;
     if ( window == 0 ) return;
@@ -357,9 +358,11 @@ _init_windows(Display * display)
     {
         for ( i=0; i < num; i++ )
         {
+            XSetErrorHandler(_xerrordummy);
             if ( ! XGetWindowAttributes(display, wins[i], &wa) )
                 continue;
-            _assign_window( display, wins[i] );
+            XSync(display, 0);
+            _kbdd_assign_window( display, wins[i] );
         }
         if (wins) XFree(wins);
     }
@@ -367,7 +370,7 @@ _init_windows(Display * display)
 
 int Kbdd_add_window(Display * display, Window window)
 {
-    _assign_window(display, window);
+    _kbdd_assign_window(display, window);
     XkbStateRec state;
     if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success ) 
     {
@@ -395,8 +398,8 @@ kbdd_set_window_layout ( Display * display, Window win )
     return result;
 }
 
-void 
-kbdd_update_window_layout ( Display * display, Window window, unsigned char grp ) 
+static void 
+_kbdd_update_window_layout ( Window window, unsigned char grp ) 
 {
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;

@@ -41,11 +41,6 @@ void kbdd_clean();
 int  kbdd_set_window_layout(Display *,Window); 
 
 /**
- * Update group info to the current one
- */
-void kbdd_update_window_layout(Display *, Window, unsigned char group);
-
-/**
  *  Remove window info from storage
  *  Display * pointer to window
  */
