@@ -316,8 +316,8 @@ _on_xkbEvent(XkbEvent ev)
             int revert;
             XGetInputFocus( ev.any.display, &focused_win, &revert);
             _kbdd_update_window_layout( focused_win, grp);
-            if ( ev.window!=focused_win ) 
-                _kbdd_update_window_layout( ev.window, grp);
+            if ( _kbdd.focus_win != focused_win ) 
+                _kbdd_update_window_layout( _kbdd.focus_win, grp);
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
