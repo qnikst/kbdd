@@ -51,7 +51,7 @@ static void _on_mappingEvent(XEvent *e);
 static void _on_keypressEvent(XEvent *e);
 static void _focus(Window w);
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
-__inline__ void _on_xkbEvent(XkbEvent ev);
+inline void _on_xkbEvent(XkbEvent ev);
 //<<prototypes
 
 typedef struct _KbddStructure {
@@ -304,7 +304,7 @@ _focus(Window w)
         _kbdd.focus_win = w;
 }
 
-__inline__ void
+inline void
 _on_xkbEvent(XkbEvent ev)
 {
     switch (ev.any.xkb_type)
@@ -316,6 +316,8 @@ _on_xkbEvent(XkbEvent ev)
             int revert;
             XGetInputFocus( ev.any.display, &focused_win, &revert);
             _kbdd_update_window_layout( focused_win, grp);
+            if ( ev.window!=focused_win ) 
+                _kbdd_update_window_layout( ev.window, grp);
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
@@ -409,8 +411,8 @@ _kbdd_update_window_layout ( Window window, unsigned char grp )
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
     _kbdd_perwindow_put(win, g);
-    if ( _updateCallback != NULL ) 
-        _updateCallback(g, (void *)_updateUserdata);
+//    if ( _updateCallback != NULL ) 
+//        _updateCallback(g, (void *)_updateUserdata);
 }
 
 void 
