@@ -392,10 +392,12 @@ void Kbdd_remove_window(Window window)
 int 
 kbdd_set_window_layout ( Display * display, Window win ) 
 {
+    //if (win==_kbdd.focus_win) return 1; //HACK maybe doesn't need it
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     int result = XkbLockGroup(display, XkbUseCoreKbd, group);
-    if (result && _updateCallback != NULL) 
-        _updateCallback(group, (void *)_updateUserdata);
+    dbg(" (%u->%u)",(uint32_t)win,group);
+    //if (result && _updateCallback != NULL) 
+    //    _updateCallback(group, (void *)_updateUserdata);
     return result;
 }
 
