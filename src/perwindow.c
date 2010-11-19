@@ -24,9 +24,6 @@
 #include "perwindow.h"
 
 GHashTable *gStorage = NULL;
-#define GINT_TO_POINTER(i) ((gpointer) (glong) (i))
-#define GUINT_TO_POINTER(u) ((gpointer) (gulong) (u))
-#define POINTER_TO_GUINT(u) ((gulong)(gpointer)(u))
 
 #ifdef DEBUG
 void debug();
@@ -56,16 +53,16 @@ _kbdd_perwindow_put(WINDOW_TYPE win, GROUP_TYPE group)
     gpointer pWindow = GUINT_TO_POINTER(win);
     if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
     {
-        dbg("old %lu\n update p %lu\n new group %u",POINTER_TO_GUINT(value) \
-                                                    ,POINTER_TO_GUINT(value)<<8 \
-                                                    , group & 0xFF );
-        value = GUINT_TO_POINTER(((POINTER_TO_GUINT(value) & 0xFF) <<8) | (group & 0xFF));
+        dbg("old %u\n update p %u\n new group %u",GPOINTER_TO_UINT(value) \
+                                                 ,GPOINTER_TO_UINT(value)<<8 \
+                                                 , group & 0xFF );
+        value = GUINT_TO_POINTER(((GPOINTER_TO_UINT(value) & 0xFF) <<8) | (group & 0xFF));
     }
     else 
     {
         value = GUINT_TO_POINTER(group);
     }
-    dbg("inserting %lu",POINTER_TO_GUINT(value));
+    dbg("inserting %lu",GPOINTER_TO_UINT(value));
     g_hash_table_replace(gStorage, pWindow, value);
     debug();
 }
@@ -82,7 +79,7 @@ _kbdd_perwindow_get_prev(WINDOW_TYPE win)
     gpointer pWindow = GUINT_TO_POINTER(win);
     if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
     {
-        group = (GROUP_TYPE)((POINTER_TO_GUINT(value)>>8) & 0xFF );
+        group = (GROUP_TYPE)((GPOINTER_TO_UINT(value)>>8) & 0xFF );
     }
     else
         group = 0;
@@ -99,7 +96,7 @@ _kbdd_perwindow_get(WINDOW_TYPE win)
     gpointer pWindow = GUINT_TO_POINTER(win);
     if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
     {
-        group = (GROUP_TYPE)(POINTER_TO_GUINT(value) & 0xFF);
+        group = (GROUP_TYPE)(GPOINTER_TO_UINT(value) & 0xFF);
     }
     else 
     {
