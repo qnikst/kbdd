@@ -406,8 +406,8 @@ kbdd_set_window_layout ( Display * display, Window win )
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     int result = XkbLockGroup(display, XkbUseCoreKbd, group);
     dbg(" (%u->%u)",(uint32_t)win,group);
-    //if (result && _updateCallback != NULL) 
-    //    _updateCallback(group, (void *)_updateUserdata);
+    if (result && _updateCallback != NULL) 
+        _updateCallback(group, (void *)_updateUserdata);
     return result;
 }
 
