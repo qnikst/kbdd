@@ -48,21 +48,23 @@ void
 _kbdd_perwindow_put(WINDOW_TYPE win, GROUP_TYPE group)
 {
     assert( gStorage != NULL );
-    gpointer key;
-    gpointer value;
-    gpointer pWindow = GUINT_TO_POINTER(win);
+    gpointer key = NULL;
+    gpointer value = NULL;
+    const gpointer pWindow = GUINT_TO_POINTER(win);
     if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
     {
-        dbg("old %u\n update p %u\n new group %u",GPOINTER_TO_UINT(value) \
-                                                 ,GPOINTER_TO_UINT(value)<<8 \
-                                                 , group & 0xFF );
-        value = GUINT_TO_POINTER(((GPOINTER_TO_UINT(value) & 0xFF) <<8) | (group & 0xFF));
+        GROUP_TYPE oldv = (GROUP_TYPE)( GPOINTER_TO_UINT(value) & 0xFF);
+        dbg("switching from %u |->new %u", oldv, group);
+        if ( oldv != group )
+          value = GUINT_TO_POINTER( ( oldv << 8 ) | ( group & 0xFF ) );
+        dbg("value %p",value);
+        //value = GUINT_TO_POINTER( ((GPOINTER_TO_UINT(value) & 0xFF) << 8) | (group & 0xFF)) ;
     }
     else 
     {
         value = GUINT_TO_POINTER(group);
     }
-    dbg("inserting %lu",GPOINTER_TO_UINT(value));
+    dbg("inserting %u -> %lu (%u)", pWindow, GPOINTER_TO_UINT(value),group);
     g_hash_table_replace(gStorage, pWindow, value);
     debug();
 }

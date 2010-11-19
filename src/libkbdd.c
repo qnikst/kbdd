@@ -436,7 +436,7 @@ kbdd_set_previous_layout(void)
 {
     Window focused_win;
     int revert;
-    dbg("set previous layout");
+    dbg("set previous layout"); 
     if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
     {
         uint32_t group = _kbdd_perwindow_get_prev(focused_win);
