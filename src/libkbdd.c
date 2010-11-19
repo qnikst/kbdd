@@ -289,8 +289,11 @@ _on_mappingEvent(XEvent *e)
 {
     dbg("in map request");
     XMappingEvent *ev = &e->xmapping;
-    _kbdd_perwindow_clean();
-    _kbdd_group_names_initialize();
+    if ( ev->request == MappingKeyboard ) 
+    {
+      _kbdd_perwindow_clean();
+      _kbdd_group_names_initialize();
+    }
     XRefreshKeyboardMapping(ev);
 }
 
@@ -304,14 +307,13 @@ _focus(Window w)
 __inline__ void
 _on_xkbEvent(XkbEvent ev)
 {
-    Window focused_win;
-    int revert;
-    uint32_t grp;
     switch (ev.any.xkb_type)
     {
         case XkbStateNotify:
             dbg( "LIBKBDD state notify event\n");
-            grp = ev.state.group;
+            uint32_t grp = ev.state.group;
+            Window focused_win;
+            int revert;
             XGetInputFocus( ev.any.display, &focused_win, &revert);
             _kbdd_update_window_layout( focused_win, grp);
             break;
