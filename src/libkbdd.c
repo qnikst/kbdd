@@ -144,7 +144,8 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
  * @global root_events
  * @global _kbdd
  */
-void _kbdd_initialize_listeners( Display * display )
+static void 
+_kbdd_initialize_listeners()
 {
     dbg("Kbdd_initialize_listeners");
     assert(_kbdd.display!=NULL);
