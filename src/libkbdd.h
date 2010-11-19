@@ -33,7 +33,7 @@ void kbdd_init();
 /**
  * Deinitialize subsystem
  */
-void kbdd_clean();
+void kbdd_free();
 
 /**
  * Update window layout

@@ -99,7 +99,7 @@ const static long root_events = StructureNotifyMask
  *      specify fuctions to deal with the outter world
  *
  * Kbdd_init  - initialize structure and plugins
- * Kbdd_clean - free memory allocated by kbdd
+ * Kbdd_free - free memory allocated by kbdd
  * Kbdd_initialize_display - initialize display and set xkbEventType
  *
  *****************************************************************************/
@@ -114,7 +114,7 @@ kbdd_init( void )
 }
 
 void 
-kbdd_clean( void )
+kbdd_free( void )
 {
     _kbdd_perwindow_free();
     _kbdd_clean_groups_info();

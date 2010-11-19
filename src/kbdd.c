@@ -285,7 +285,7 @@ int main(int argc, char * argv[])
     g_timeout_add(100, kbdd_default_iter, mainloop);
     g_main_loop_run(mainloop);
 #endif
-    kbdd_clean();
+    kbdd_free();
     return EXIT_SUCCESS;
 }
 
