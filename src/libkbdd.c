@@ -44,6 +44,7 @@ static void _kbdd_update_window_layout(Window window, unsigned char grp);
 static int  _kbdd_add_window(Window window);
 static Display *  _kbdd_initialize_display();
 static void _kbdd_initialize_listeners();
+inline void _kbdd_focus_window(Window w);
 inline void _kbdd_proceed_event(XkbEvent ev);
 static void _on_enterEvent(XEvent *e);
 static void _on_createEvent(XEvent *e);
@@ -52,7 +53,6 @@ static void _on_propertyEvent(XEvent *e);
 static void _on_focusEvent(XEvent *e);
 static void _on_mappingEvent(XEvent *e);
 static void _on_keypressEvent(XEvent *e);
-static void _focus(Window w);
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
 inline void _on_xkbEvent(XkbEvent ev);
 //<<prototypes
@@ -245,7 +245,7 @@ _on_propertyEvent(XEvent *e)
     if (ev->state==0) return;
     if (ev->window == _kbdd.focus_win)
         return;
-    _focus(ev->window);
+    _kbdd_focus_window(ev->window);
     dbg("property event");
     int revert;
     Window focused_win;
@@ -263,7 +263,7 @@ _on_focusEvent(XEvent *e)
     XFocusChangeEvent *ev = &e->xfocus;
     if (ev->window == _kbdd.focus_win) 
         return;
-    _focus(ev->window);    
+    _kbdd_focus_window(ev->window);    
     dbg("focus event %u", (uint32_t)ev->window);
     Window focused_win;
     int revert;
@@ -281,7 +281,7 @@ _on_enterEvent(XEvent *e)
     if ( (ev->mode != NotifyNormal || ev->detail == NotifyInferior) 
             && ev->window != _kbdd.root_window ) 
         return;
-    _focus(ev->window);
+    _kbdd_focus_window(ev->window);
     XSync(ev->display, 0);
     dbg("enter event");
     return;
@@ -300,8 +300,8 @@ _on_mappingEvent(XEvent *e)
     XRefreshKeyboardMapping(ev);
 }
 
-static void 
-_focus(Window w) 
+inline void 
+_kbdd_focus_window(Window w) 
 {
     if (w) 
         _kbdd.focus_win = w;
