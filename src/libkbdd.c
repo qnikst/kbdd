@@ -32,13 +32,16 @@
 #define CLEANMASK(mask) (mask & ~(LockMask))
 #define LENGTH(X)       (sizeof X / sizeof X[0])
 
-//>>prototypes
-inline void  _kbdd_group_names_initialize();
-inline void  _kbdd_inner_iter(Display * display);
-inline void  _kbdd_clean_groups_info();
+/**
+ * method prototypes
+ **/
 inline void _kbdd_assign_window(Display *display,Window window);
+inline void _kbdd_group_names_initialize();
+inline void _kbdd_inner_iter(Display * display);
+inline void _kbdd_clean_groups_info();
 __inline__ void _init_windows(Display * display);
 static void _kbdd_update_window_layout(Window window, unsigned char grp);
+static int  _kbdd_add_window(Window window);
 static Display *  _kbdd_initialize_display();
 static void _kbdd_initialize_listeners();
 inline void _kbdd_proceed_event(XkbEvent ev);
@@ -220,7 +223,7 @@ _on_createEvent(XEvent *e )
 {
     XCreateWindowEvent * ev = &e->xcreatewindow;
     dbg("creating window %u",(uint32_t)ev->window);
-    Kbdd_add_window(ev->display, ev->window);
+    _kbdd_add_window(ev->window);
 }
 
 static void 
@@ -373,8 +376,11 @@ _init_windows(Display * display)
     }
 }
 
-int Kbdd_add_window(Display * display, Window window)
+static int 
+_kbdd_add_window(Window window)
 {
+    Display * display = _kbdd.display;
+    assert( display != NULL );
     _kbdd_assign_window(display, window);
     XkbStateRec state;
     if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success ) 
