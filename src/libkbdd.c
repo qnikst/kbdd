@@ -417,8 +417,8 @@ _kbdd_update_window_layout ( Window window, unsigned char grp )
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
     _kbdd_perwindow_put(win, g);
-//    if ( _updateCallback != NULL ) 
-//        _updateCallback(g, (void *)_updateUserdata);
+    if ( _updateCallback != NULL ) 
+        _updateCallback(g, (void *)_updateUserdata);
 }
 
 void 
