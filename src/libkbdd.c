@@ -428,10 +428,10 @@ kbdd_set_current_window_layout ( uint32_t layout)
     int revert;
     if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
     {
-      if (_kbdd.focus_win == focused_win ) 
-          _kbdd_perwindow_put(focused_win, layout);
-      else
-          XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
+        if (_kbdd.focus_win == focused_win )  //this hack will not save us in case ok KDE+Awesome
+            _kbdd_perwindow_put(focused_win, layout);
+        //else
+        XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
     }
     dbg("set window layout %u",layout);
     //int result = XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
