@@ -1,3 +1,5 @@
+2010-11-26  v0.4.4 fixed KDE/Awesome bug. (handling dbus events)
+
 2010-11-19  v0.3.3 refactoring 
 			all changes from v0.4 was re-implemented
 
