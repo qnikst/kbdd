@@ -41,7 +41,7 @@ inline void _kbdd_inner_iter(Display * display);
 inline void _kbdd_clean_groups_info();
 __inline__ void _init_windows(Display * display);
 static void _kbdd_update_window_layout(Window window, unsigned char grp);
-static int  _kbdd_add_window(Window window);
+static int  _kbdd_add_window(const Window window, const int accept_layout);
 static Display *  _kbdd_initialize_display();
 static void _kbdd_initialize_listeners();
 inline void _kbdd_focus_window(Window w);
@@ -223,7 +223,7 @@ _on_createEvent(XEvent *e )
 {
     XCreateWindowEvent * ev = &e->xcreatewindow;
     dbg("creating window %u",(uint32_t)ev->window);
-//    _kbdd_add_window(ev->window);
+    _kbdd_add_window(ev->window, 0);
 }
 
 static void 
@@ -377,19 +377,21 @@ _init_windows(Display * display)
 }
 
 static int 
-_kbdd_add_window(Window window)
+_kbdd_add_window(const Window window, const int accept_layout)
 {
     Display * display = _kbdd.display;
     assert( display != NULL );
     _kbdd_assign_window(display, window);
 
-    XkbStateRec state;
-    if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success ) 
-    {
-        WINDOW_TYPE win = (WINDOW_TYPE)window;
-        _kbdd_perwindow_put(win, state.group);
-        if ( _updateCallback != NULL ) 
-            _updateCallback(state.group, (void *)_updateUserdata);
+    if ( accept_layout ) {
+      XkbStateRec state;
+      if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success ) 
+      {
+          WINDOW_TYPE win = (WINDOW_TYPE)window;
+          _kbdd_perwindow_put(win, state.group);
+          if ( _updateCallback != NULL ) 
+              _updateCallback(state.group, (void *)_updateUserdata);
+      }
     }
     return 0;
 }
