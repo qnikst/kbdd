@@ -223,7 +223,7 @@ _on_createEvent(XEvent *e )
 {
     XCreateWindowEvent * ev = &e->xcreatewindow;
     dbg("creating window %u",(uint32_t)ev->window);
-    _kbdd_add_window(ev->window);
+//    _kbdd_add_window(ev->window);
 }
 
 static void 
@@ -382,6 +382,7 @@ _kbdd_add_window(Window window)
     Display * display = _kbdd.display;
     assert( display != NULL );
     _kbdd_assign_window(display, window);
+
     XkbStateRec state;
     if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success ) 
     {
