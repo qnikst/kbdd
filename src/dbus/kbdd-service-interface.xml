@@ -16,6 +16,10 @@
             <arg type="s" name="layout_name" direction="out"/>
         </method>
 
+        <method name="getCurrentLayout">
+            <arg type="u" name="layout_id" direction="out"/>
+        </method>
+
         <method name="set_layout">
             <arg type="u" name="layout_id" direction="in"/>
         </method>

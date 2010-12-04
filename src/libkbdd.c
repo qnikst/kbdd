@@ -489,6 +489,18 @@ kbdd_set_next_layout()
     }
 }
 
+uint32_t
+kbdd_get_current_layout()
+{
+    uint32_t result = 0;
+    XkbStateRec state;
+    if ( XkbGetState(_kbdd.display, XkbUseCoreKbd, &state) == Success ) 
+    {
+        result =  state.group;
+    }
+    return result;
+}
+
 /**
  * Group names functions
  */

@@ -212,3 +212,10 @@ m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError **error)
     kbdd_set_current_window_layout(value);
     return 1;
 }
+
+int 
+m_kbdd_service_get_current_layout(MKbddService *obj,uint32_t *value,GError **error)
+{
+    uint32_t out = kbdd_get_current_layout();
+    return 1;
+}

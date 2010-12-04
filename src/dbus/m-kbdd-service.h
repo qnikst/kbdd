@@ -69,10 +69,11 @@ int m_kbdd_service_prev_layout(MKbddService *obj, GError ** error);
 int m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error);
 //get layout name dbus method
 int m_kbdd_service_get_layout_name(MKbddService *, uint32_t, char **, GError **);
+//get current layout id
+int m_kbdd_service_get_current_layout(MKbddService *,uint32_t *,GError **);
 
 /** INNER KBDD METHODS **/
 void m_kbdd_service_update_layout(MKbddService *, uint32_t, const char * );
-
 /** SERVICE METHODS **/
 MKbddService *m_kbdd_service_new (void);
 GType m_kbdd_service_get_type (void);
