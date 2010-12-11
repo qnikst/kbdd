@@ -1,3 +1,10 @@
+2010-12-11	v0.5 version bump
+
+2010-12-07	new dbus method getCurrentLayout
+			returns current group id
+
+2010-12-03	newly created window will have default layout in any cases
+
 2010-11-26  v0.4.4 fixed KDE/Awesome bug. (handling dbus events)
 
 2010-11-19  v0.3.3 refactoring 
