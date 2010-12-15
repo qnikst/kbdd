@@ -26,6 +26,7 @@ BUILT_SOURCES = m-kbdd-service-marshal.o m-kbdd-service-marshal.c  kbdd-service-
 AM_CFLAGS = $(GLIB_CFLAGS) $(DBUSGLIB_CFLAGS)
 
 CLEANFILES = $(BUILT_SOURCES) 
-EXTRA_DIST = kbdd-service-interface.xml kbdd-marshal.list
+EXTRA_DIST = kbdd-service-interface.xml kbdd-marshal.list m-kbdd-service.h
+
 INTERFACE_XML = kbdd-service-interface.xml
 
