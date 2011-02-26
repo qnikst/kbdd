@@ -337,6 +337,11 @@ _on_xkbEvent(XkbEvent ev)
 int 
 _xerrordummy(Display *dpy, XErrorEvent *ee) 
 {
+#ifdef DEBUG
+    char codebuff[256];
+    XGetErrorText(dpy, ee->error_code, &codebuff, 256);
+    printf("XError code: %c\n text: %s", ee->error_code, codebuff);
+#endif
     return 0;
 }
 /**
