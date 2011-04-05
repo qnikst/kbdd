@@ -1,3 +1,5 @@
+2011-04-05  grp:switch fix (thanks to felagund)
+
 2010-12-11	v0.5 version bump
 
 2010-12-07	new dbus method getCurrentLayout
