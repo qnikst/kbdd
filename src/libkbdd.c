@@ -318,7 +318,7 @@ _on_xkbEvent(XkbEvent ev)
             Window focused_win;
             int revert;
             XGetInputFocus( ev.any.display, &focused_win, &revert);
-            if (grp == ev.locked.group) //do not save layout with modifier
+            if (grp == ev.state.locked_group) //do not save layout with modifier
                 _kbdd_update_window_layout( focused_win, grp);
             break;
         case XkbNewKeyboardNotify:
