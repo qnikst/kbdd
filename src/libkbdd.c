@@ -317,8 +317,7 @@ _on_xkbEvent(XkbEvent ev)
             uint32_t grp = ev.state.group;
             Window focused_win;
             int revert;
-            XGetInputFocus( ev.any.display, &focused_win, &revert);
-            if (grp == ev.state.locked_group) //do not save layout with modifier
+            щf (grp == ev.state.locked_group) //do not save layout with modifier
                 _kbdd_update_window_layout( focused_win, grp);
             break;
         case XkbNewKeyboardNotify:
@@ -441,7 +440,6 @@ kbdd_set_current_window_layout ( uint32_t layout)
         XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
     }
     dbg("set window layout %u",layout);
-    //int result = XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
 }
 
 void 
@@ -500,7 +498,7 @@ kbdd_get_current_layout()
     XkbStateRec state;
     if ( XkbGetState(_kbdd.display, XkbUseCoreKbd, &state) == Success ) 
     {
-        result =  state.group;
+        result =  state.locked_group;
     }
     return result;
 }
