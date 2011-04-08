@@ -317,7 +317,7 @@ _on_xkbEvent(XkbEvent ev)
             uint32_t grp = ev.state.group;
             Window focused_win;
             int revert;
-            щf (grp == ev.state.locked_group) //do not save layout with modifier
+            if (grp == ev.state.locked_group) //do not save layout with modifier
                 _kbdd_update_window_layout( focused_win, grp);
             break;
         case XkbNewKeyboardNotify:
