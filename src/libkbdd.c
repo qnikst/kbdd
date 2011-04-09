@@ -39,7 +39,8 @@ inline void _kbdd_assign_window(Display *display,Window window);
 inline void _kbdd_group_names_initialize();
 inline void _kbdd_inner_iter(Display * display);
 inline void _kbdd_clean_groups_info();
-__inline__ void _init_windows(Display * display);
+inline void _kbdd_unlock_modifiers(Display *display);
+inline void _init_windows(Display * display);
 static void _kbdd_update_window_layout(Window window, unsigned char grp);
 static int  _kbdd_add_window(const Window window, const int accept_layout);
 static Display *  _kbdd_initialize_display();
@@ -251,6 +252,7 @@ _on_propertyEvent(XEvent *e)
     Window focused_win;
     XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(ev->display, /*ev->window,*/ focused_win);
+    _kbdd_unlock_modifiers( ev->display );
     XSync(ev->display, 0);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
@@ -269,6 +271,7 @@ _on_focusEvent(XEvent *e)
     int revert;
     XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
+    _kbdd_unlock_modifiers( ev->display );
     XSync(ev->display, 0);
 }
 
@@ -282,6 +285,7 @@ _on_enterEvent(XEvent *e)
             && ev->window != _kbdd.root_window ) 
         return;
     _kbdd_focus_window(ev->window);
+    _kbdd_unlock_modifiers( ev->display );
     XSync(ev->display, 0);
     dbg("enter event");
     return;
@@ -338,7 +342,7 @@ _xerrordummy(Display *dpy, XErrorEvent *ee)
 {
 #ifdef DEBUG
     char codebuff[256];
-    XGetErrorText(dpy, ee->error_code, &codebuff, 256);
+    XGetErrorText(dpy, ee->error_code, (char *)&codebuff, 256);
     printf("XError code: %c\n text: %s", ee->error_code, codebuff);
 #endif
     return 0;
@@ -360,7 +364,16 @@ _kbdd_assign_window(Display * display, Window window)
     XSync(display, 0);
 }
 
-__inline__ void
+/**
+ * Unlock keyboard modifiers
+ */
+inline void
+_kbdd_unlock_modifiers(Display * display) 
+{
+    XkbLockModifiers(display, XkbUseCoreKbd, Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask, 0);
+}
+
+inline void
 _init_windows(Display * display)
 {
     unsigned int i, num;
@@ -553,6 +566,7 @@ kbdd_get_layout_name( uint32_t id, char ** layout)
   *layout = strdup( (const char *)_group_names[id] );
   return 1;
 }
+
 
 //vim:ts=4:expandtab
 
