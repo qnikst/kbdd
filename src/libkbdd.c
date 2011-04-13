@@ -233,7 +233,7 @@ _on_destroyEvent(XEvent *e)
     dbg("destroy event");
     XSetErrorHandler(_xerrordummy);
     XDestroyWindowEvent * ev = &e->xdestroywindow;
-    XSync(ev->display, 0);
+//    XSync(ev->display, 0);
     dbg("destroying window %u",(uint32_t)ev->window);
     Kbdd_remove_window(ev->window);
 }
@@ -253,7 +253,7 @@ _on_propertyEvent(XEvent *e)
     XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(ev->display, /*ev->window,*/ focused_win);
     _kbdd_unlock_modifiers( ev->display );
-    XSync(ev->display, 0);
+//    XSync(ev->display, 0);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
 }
@@ -272,7 +272,7 @@ _on_focusEvent(XEvent *e)
     XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
     _kbdd_unlock_modifiers( ev->display );
-    XSync(ev->display, 0);
+//    XSync(ev->display, 0);
 }
 
 
@@ -286,7 +286,7 @@ _on_enterEvent(XEvent *e)
         return;
     _kbdd_focus_window(ev->window);
     _kbdd_unlock_modifiers( ev->display );
-    XSync(ev->display, 0);
+//    XSync(ev->display, 0);
     dbg("enter event");
     return;
 }
@@ -361,7 +361,7 @@ _kbdd_assign_window(Display * display, Window window)
     if ( ! XGetWindowAttributes(display,window,&wa) ) 
         return;
     XSelectInput( display, window, w_events);
-    XSync(display, 0);
+//    XSync(display, 0);
 }
 
 /**
@@ -370,7 +370,10 @@ _kbdd_assign_window(Display * display, Window window)
 inline void
 _kbdd_unlock_modifiers(Display * display) 
 {
-    XkbLockModifiers(display, XkbUseCoreKbd, Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask, 0);
+    int mask = Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask;
+    dbg("unlocking modifiers.. %i", mask);
+    XkbLockModifiers(display, XkbUseCoreKbd, mask, 0);
+    XkbLatchModifiers(display, XkbUseCoreKbd, mask, 0);
 }
 
 inline void
@@ -386,7 +389,7 @@ _init_windows(Display * display)
             XSetErrorHandler(_xerrordummy);
             if ( ! XGetWindowAttributes(display, wins[i], &wa) )
                 continue;
-            XSync(display, 0);
+//            XSync(display, 0);
             _kbdd_assign_window( display, wins[i] );
         }
         if (wins) XFree(wins);
