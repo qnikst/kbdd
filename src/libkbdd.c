@@ -261,13 +261,18 @@ _on_focusEvent(XEvent *e)
 {
     XSetErrorHandler(_xerrordummy);
     XFocusChangeEvent *ev = &e->xfocus;
+    Window focused_win;
     if (ev->window == _kbdd.focus_win) 
         return;
-    _kbdd_focus_window(ev->window);    
-    dbg("focus event %u", (uint32_t)ev->window);
-    Window focused_win;
-    int revert;
-    XGetInputFocus(ev->display, &focused_win, &revert);
+
+    if ( (ev->mode == NotifyGrab) ) {
+      focused_win = ev->window;
+    } else {
+      _kbdd_focus_window(ev->window);    
+      dbg("focus event %u", (uint32_t)ev->window);
+      int revert;
+      XGetInputFocus(ev->display, &focused_win, &revert);
+    }
     kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
     XSync(ev->display, 0);
 }
@@ -278,6 +283,9 @@ _on_enterEvent(XEvent *e)
 {
     XSetErrorHandler(_xerrordummy);
     XCrossingEvent *ev = &e->xcrossing;
+    if ( (ev->mode == NotifyGrab) || (ev->mode == NotifyUngrab)) {
+        dbg("mode: %i",ev->mode);
+    }
     if ( (ev->mode != NotifyNormal || ev->detail == NotifyInferior) 
             && ev->window != _kbdd.root_window ) 
         return;
