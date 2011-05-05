@@ -31,7 +31,7 @@
 
 #define CLEANMASK(mask) (mask & ~(LockMask))
 #define LENGTH(X)       (sizeof X / sizeof X[0])
-
+#define KBDD_MAX_EVENTS    10
 /**
  * method prototypes
  **/
@@ -169,8 +169,9 @@ _kbdd_initialize_listeners()
 int 
 kbdd_default_iter(void * data)
 {
+    int iter = 0;
     assert( _kbdd.display != NULL );
-    while ( XPending( _kbdd.display ) ) 
+    while ( XPending( _kbdd.display ) && ++iter < KBDD_MAX_EVENTS ) 
         _kbdd_inner_iter(_kbdd.display);
     return 1;
 }
