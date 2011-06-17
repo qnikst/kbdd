@@ -1,3 +1,9 @@
+2011-06-17	v0.6 vesion bump
+
+2011-06-05  #BUG6 fixed: (layout not changing in dmenu)
+
+2011-05-05  #BUG5 fixed: (alt key locked with grp:swith xkb option)
+
 2011-04-05  grp:switch fix (thanks to felagund)
 
 2010-12-11	v0.5 version bump

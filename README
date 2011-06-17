@@ -45,6 +45,11 @@ More info
 you can go to kbdd wiki to check usecases described:
 http://github.com/qnikst/kbdd/wiki/Usecases
 
+Known bugs
+---------------
+ * Sometimes meta4 key lips in awesome, this bug was never reproduced
+ anywere but on one host. 
+
 Troubleshooting
 ---------------
 All bugs and issues can be posted to 

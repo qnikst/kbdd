@@ -1,11 +1,11 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([kbdd], [0.5.1_pre], [qnikst@gentoo.ru])
+AC_INIT([kbdd], [0.6], [qnikst@gentoo.ru])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS(config.h)
 
-AM_INIT_AUTOMAKE([kbdd], [0.5.1_pre])
+AM_INIT_AUTOMAKE([kbdd], [0.6])
 AC_SUBST(PACKAGE_URL, [http://github.com/qnikst/kbdd] )
 
 # Checks for programs.
