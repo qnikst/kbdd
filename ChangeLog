@@ -1,3 +1,5 @@
+2011-08-07  start using git-flow (internally)
+
 2011-06-17	v0.6 vesion bump
 
 2011-06-05  #BUG6 fixed: (layout not changing in dmenu)
