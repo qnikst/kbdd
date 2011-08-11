@@ -1,7 +1,5 @@
 if BUILD_DBUS
 SUBDIRS = dbus
-
-EXTRA_DIST = $(man_MANS)
 endif
 bin_PROGRAMS = kbdd
 kbdd_SOURCES = kbdd.c perwindow.c libkbdd.c
