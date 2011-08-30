@@ -1,47 +1,82 @@
-.TH KBDD 1 "OCT 2010" Linux "User Manual" 
-.SH NAME kbdd - simple per-window keyboard layout daemon
+.TH KBDD 1 "27 Aug 2011" "version 0.6" "XKB layout switching daemon"
+.SH NAME
+kbdd - simple per-window keyboard layout switching daemon
 .SH SYNOPSIS
 .B kbdd
-.RB [ \-v ]
+.RB "[ " \-n " | " \-\-nodaemon " ]"
+.br
+.B kbdd
+.RB "[ " \-h " | " \-\-help " ] [ " \-v " | " \-\-version " ]"
 .SH DESCRIPTION
-kbdd is a simple per-window keyboard layout daemon. It can be run via
-a shell. Kbdd has dbus interface for notifying about layout change and
-listening for incoming requests.
-
-kbbd has dbus interface with next methods:
+kbdd is a simple keyboard layout daemon that switches and restores
+layouts on a per-window basis.
+.TP
+.BR \-n ", " \-\-nodaemon
+run in nodaemon (foreground) mode
+.TP
+.BR \-h ", " \-\-help
+print a short usage summary
+.TP
+.BR \-v ", " \-\-version
+print the program version
+.SH DBUS INTERFACE
+Kbdd registers a dbus interface in order to notify a window manager
+about layout change and listens on this interface for incoming requests.
+This interface can be used in WM widgets to indicate the current layout.
+.P
+The dbus interface has the following methods:
 .TP
 .B getLayoutName( uint32 ) 
-returns string presentation of group name
+returns a string representing the layout group name
 .TP
-.B set_layout(uint32 )  
-set current group
+.B set_layout( uint32 )
+sets current group
 .TP
 .B getCurrentLayout
-get current group id
+returns current layout group id
 .TP
-.B next_layout          
-switch to the next keyboard layout
+.B next_layout
+switches to the next keyboard layout
 .TP
 .B prev_layout             
-switch to the previous keyboard layout
-
-and events(signals):
-
+switches to the previous keyboard layout
+.P
+The following events (signals) are available:
 .TP
 .B layoutChanged          
 returns new group number
 .TP
 .B layoutNameChanged       
 returns name for the new group 
-
-so you can change encoding with dbus-send command:
-   dbus-send --dest=ru.gentoo.KbddService /ru/gentoo/KbddService ru.gentoo.kbdd.set_layout uint32:1
-To get more information about kbdd usage you can visit 
-https://github.com/qnikst/kbdd/wiki/Usecases page
-
+.P
+You can change the layout with the following dbus-send command:
+.EX
+.B dbus-send \-\-dest=ru.gentoo.KbddService /ru/gentoo/KbddService ru.gentoo.kbdd.set_layout uint32:1
+.EE
 .SH BUGS
-For some users meta-keys (like alt or Meta4 stick) but there is not enough
-report data to investigate if this a kbdd bug or not.
-If you find any bug please report to http://github.com/qnikst/kbdd/issues
+Some users reported problems with sticking meta-keys
+(Alt or Meta4), however, at the moment there is not
+enough information collected to conclude
+if this is caused by kbdd or not.
+.P
+Newly found bugs may be reported on
+.UR http://github.com/qnikst/kbdd/issues
+the project page at github
+.UE .
 .SH AUTORS
-Alexander V. Vershilov <alexander.vershilov@gmail.com>
+.MT alexander.vershilov@gmail.com
+Alexander V. Vershilov
+.ME
+.P
+This manual page was updated for the Debian project by
+.MT stanislav.maslovski@gmail.com
+Stanislav Maslovski
+.ME
+.SH SEE ALSO
+.IR dbus-send (1),
+.IR dbus-monitor (1)
+.P
+You can get more information about kbdd usage on
+.UR https://github.com/qnikst/kbdd/wiki/Usecases
+wiki pages of the kbdd project
+.UE .
