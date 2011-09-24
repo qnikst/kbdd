@@ -55,6 +55,7 @@ static void _on_mappingEvent(XEvent *e);
 static void _on_keypressEvent(XEvent *e);
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
 inline void _on_xkbEvent(XkbEvent ev);
+inline int kbdd_real_lock(int);
 //<<prototypes
 
 typedef struct _KbddStructure {
@@ -426,12 +427,9 @@ kbdd_set_window_layout ( Display * display, Window win )
     //if (win==_kbdd.focus_win) return 1; //HACK maybe doesn't need it
     int result = 0;
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
-    if ( _kbdd.prevGroup != group && _updateCallback != NULL) {
-        result = XkbLockGroup(display, XkbUseCoreKbd, group);
-        dbg(" (%u->%u)",(uint32_t)win,group);
-        if (result) {
+    if ( _kbdd.prevGroup != group ) {
+        if (kbdd_real_lock(group) && _updateCallback != NULL) {
             _updateCallback(group, (void *)_updateUserdata);
-            _kbdd.prevGroup = group;
         }
     }
     return result;
@@ -457,8 +455,7 @@ kbdd_set_current_window_layout ( uint32_t layout)
         if (_kbdd.focus_win == focused_win )  //this hack will not save us in case ok KDE+Awesome
             _kbdd_perwindow_put(focused_win, layout);
         //else
-        XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
-
+        kbdd_real_lock(layout);
     }
     dbg("set window layout %u",layout);
 }
@@ -573,6 +570,20 @@ kbdd_get_layout_name( uint32_t id, char ** layout)
   *layout = strdup( (const char *)_group_names[id] );
   return 1;
 }
+
+int
+kbdd_real_lock(int group) {
+    int result = 0;
+    if ( _kbdd.prevGroup != group) {
+        result = XkbLockGroup(_kbdd.display, XkbUseCoreKbd, group);
+        if (result) {
+            _kbdd.prevGroup = group;
+        }
+    }
+    return result;
+}
+
+
 
 //vim:ts=4:expandtab
 
