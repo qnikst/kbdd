@@ -32,6 +32,9 @@
 #define dbg(dummy...)
 #endif
 
+#define DEFAULT_FST_LAYOUT 0
+#define DEFAULT_SND_LAYOUT 1
+
 #endif
 
 //vim:ts=4:expandtab

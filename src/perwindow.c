@@ -31,6 +31,8 @@ void debug();
 #define debug(dummy...) 
 #endif
 
+GROUP_TYPE _kbdd_perwindow_init_default(WINDOW_TYPE win, int isCurrent);
+
 void 
 _kbdd_perwindow_init() {
     if ( gStorage!=NULL ) return; 
@@ -64,7 +66,7 @@ _kbdd_perwindow_put(WINDOW_TYPE win, GROUP_TYPE group)
     {
         value = GUINT_TO_POINTER(group);
     }
-    dbg("inserting %u -> %lu (%u)", pWindow, GPOINTER_TO_UINT(value),group);
+    dbg("inserting %p -> %u (%u)", pWindow, GPOINTER_TO_UINT(value),group);
     g_hash_table_replace(gStorage, pWindow, value);
     debug();
 }
@@ -84,7 +86,7 @@ _kbdd_perwindow_get_prev(WINDOW_TYPE win)
         group = (GROUP_TYPE)((GPOINTER_TO_UINT(value)>>8) & 0xFF );
     }
     else
-        group = 0;
+        group = _kbdd_perwindow_init_default(win, 0);
     return group;
 }
 
@@ -102,10 +104,21 @@ _kbdd_perwindow_get(WINDOW_TYPE win)
     }
     else 
     {
-        group = 0;
+        group = _kbdd_perwindow_init_default(win, 1);
     }
     return group;
 }
+
+GROUP_TYPE
+_kbdd_perwindow_init_default(WINDOW_TYPE win, int isCurrent)
+{
+    assert( gStorage != NULL );
+    const gpointer value = GUINT_TO_POINTER( (DEFAULT_SND_LAYOUT<<8) | (DEFAULT_FST_LAYOUT & 0xFF));
+    const gpointer pWindow = GUINT_TO_POINTER(win);
+    g_hash_table_replace(gStorage, pWindow, value);
+    return (isCurrent)?DEFAULT_FST_LAYOUT:DEFAULT_SND_LAYOUT;
+}
+
 
 void 
 _kbdd_perwindow_remove(WINDOW_TYPE win)
