@@ -60,6 +60,7 @@ inline void _on_xkbEvent(XkbEvent ev);
 typedef struct _KbddStructure {
     int haveNames;
     int _xkbEventType;
+    int prevGroup;
     Window focus_win;
     Display * display;
     Window root_window;
@@ -114,6 +115,7 @@ kbdd_init( void )
     _kbdd.display = _kbdd_initialize_display();
     _kbdd_initialize_listeners();
     _kbdd_group_names_initialize();
+    _kbdd.prevGroup = 0;
 }
 
 void 
@@ -265,14 +267,18 @@ _on_focusEvent(XEvent *e)
     if (ev->window == _kbdd.focus_win) 
         return;
 
-    if ( (ev->mode == NotifyGrab) ) {
+/*  This function do not work as needed
+ *  TODO: remember why did I add this
+ *        or totally delete
+ *
+ *  if ( (ev->mode == NotifyGrab) ) {
       focused_win = ev->window;
     } else {
       _kbdd_focus_window(ev->window);    
       dbg("focus event %u", (uint32_t)ev->window);
-      int revert;
-      XGetInputFocus(ev->display, &focused_win, &revert);
-    }
+    }*/
+    int revert;
+    XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
     XSync(ev->display, 0);
 }
@@ -346,7 +352,7 @@ _xerrordummy(Display *dpy, XErrorEvent *ee)
 {
 #ifdef DEBUG
     char codebuff[256];
-    XGetErrorText(dpy, ee->error_code, &codebuff, 256);
+    XGetErrorText(dpy, ee->error_code, (char *)&codebuff, 256);
     printf("XError code: %c\n text: %s", ee->error_code, codebuff);
 #endif
     return 0;
@@ -401,7 +407,7 @@ _kbdd_add_window(const Window window, const int accept_layout)
       {
           WINDOW_TYPE win = (WINDOW_TYPE)window;
           _kbdd_perwindow_put(win, state.group);
-          if ( _updateCallback != NULL ) 
+          if ( state.group != _kbdd.prevGroup, _updateCallback != NULL ) 
               _updateCallback(state.group, (void *)_updateUserdata);
       }
     }
@@ -418,11 +424,16 @@ int
 kbdd_set_window_layout ( Display * display, Window win ) 
 {
     //if (win==_kbdd.focus_win) return 1; //HACK maybe doesn't need it
+    int result = 0;
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
-    int result = XkbLockGroup(display, XkbUseCoreKbd, group);
-    dbg(" (%u->%u)",(uint32_t)win,group);
-    if (result && _updateCallback != NULL) 
-        _updateCallback(group, (void *)_updateUserdata);
+    if ( _kbdd.prevGroup != group && _updateCallback != NULL) {
+        result = XkbLockGroup(display, XkbUseCoreKbd, group);
+        dbg(" (%u->%u)",(uint32_t)win,group);
+        if (result) {
+            _updateCallback(group, (void *)_updateUserdata);
+            _kbdd.prevGroup = group;
+        }
+    }
     return result;
 }
 
@@ -447,6 +458,7 @@ kbdd_set_current_window_layout ( uint32_t layout)
             _kbdd_perwindow_put(focused_win, layout);
         //else
         XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
+
     }
     dbg("set window layout %u",layout);
 }
