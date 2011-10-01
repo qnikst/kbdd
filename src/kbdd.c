@@ -282,7 +282,8 @@ int main(int argc, char * argv[])
     kbdd_default_loop( NULL );
 #else
     kbdd_setupUpdateCallback(onLayoutUpdate, service);
-    g_timeout_add(100, kbdd_default_iter, mainloop);
+    //g_timeout_add(100, kbdd_default_iter, mainloop);
+    GThread * t = g_thread_create(kbdd_default_loop, NULL, FALSE, NULL);
     g_main_loop_run(mainloop);
 #endif
     kbdd_free();

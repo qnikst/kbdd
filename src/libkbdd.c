@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
 #include <stdio.h>
 
 #include "libkbdd.h"
@@ -53,6 +52,8 @@ static void _on_propertyEvent(XEvent *e);
 static void _on_focusEvent(XEvent *e);
 static void _on_mappingEvent(XEvent *e);
 static void _on_keypressEvent(XEvent *e);
+inline void _kbdd_wait_accure();
+inline void _kbdd_release();
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
 inline void _on_xkbEvent(XkbEvent ev);
 inline int kbdd_real_lock(int);
@@ -62,11 +63,11 @@ typedef struct _KbddStructure {
     int haveNames;
     int _xkbEventType;
     int prevGroup;
+    int kbddLock;
     Window focus_win;
     Display * display;
     Window root_window;
 } KbddStructure;
-
 
 static volatile UpdateCallback    _updateCallback = NULL;
 static volatile void *            _updateUserdata = NULL;
@@ -117,13 +118,16 @@ kbdd_init( void )
     _kbdd_initialize_listeners();
     _kbdd_group_names_initialize();
     _kbdd.prevGroup = 0;
+    _kbdd.kbddLock = 0;
 }
 
 void 
 kbdd_free( void )
 {
+    _kbdd_accure();
     _kbdd_perwindow_free();
     _kbdd_clean_groups_info();
+    _kbdd_release();
 }
 
 Display * 
@@ -309,8 +313,10 @@ _on_mappingEvent(XEvent *e)
     XMappingEvent *ev = &e->xmapping;
     if ( ev->request == MappingKeyboard ) 
     {
+      _kbdd_accure();
       _kbdd_perwindow_clean();
       _kbdd_group_names_initialize();
+      _kbdd_release();
     }
     XRefreshKeyboardMapping(ev);
 }
@@ -338,9 +344,11 @@ _on_xkbEvent(XkbEvent ev)
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
+            _kbdd_accure();
             _kbdd_perwindow_clean();
             _kbdd_clean_groups_info();
             _kbdd_group_names_initialize();
+            _kbdd_release();
             break;
         default:
             break;
@@ -407,9 +415,11 @@ _kbdd_add_window(const Window window, const int accept_layout)
       if ( XkbGetState(display, XkbUseCoreKbd, &state) == Success ) 
       {
           WINDOW_TYPE win = (WINDOW_TYPE)window;
+          _kbdd_accure();
           _kbdd_perwindow_put(win, state.group);
           if ( state.group != _kbdd.prevGroup, _updateCallback != NULL ) 
               _updateCallback(state.group, (void *)_updateUserdata);
+          _kbdd_release();
       }
     }
     return 0;
@@ -418,7 +428,9 @@ _kbdd_add_window(const Window window, const int accept_layout)
 void Kbdd_remove_window(Window window)
 {
     WINDOW_TYPE win = (WINDOW_TYPE)window;
+    _kbdd_accure();
     _kbdd_perwindow_remove(win);
+    _kbdd_release();
 }
 
 int 
@@ -426,12 +438,14 @@ kbdd_set_window_layout ( Display * display, Window win )
 {
     //if (win==_kbdd.focus_win) return 1; //HACK maybe doesn't need it
     int result = 0;
+    _kbdd_accure();
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     if ( _kbdd.prevGroup != group ) {
         if (kbdd_real_lock(group) && _updateCallback != NULL) {
             _updateCallback(group, (void *)_updateUserdata);
         }
     }
+    _kbdd_release();
     return result;
 }
 
@@ -440,9 +454,11 @@ _kbdd_update_window_layout ( Window window, unsigned char grp )
 {
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
+    _kbdd_accure();
     _kbdd_perwindow_put(win, g);
     if ( _updateCallback != NULL ) 
         _updateCallback(g, (void *)_updateUserdata);
+    _kbdd_release();
 }
 
 void 
@@ -450,6 +466,7 @@ kbdd_set_current_window_layout ( uint32_t layout)
 {
     Window focused_win;
     int revert;
+    _kbdd_accure();
     if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
     {
         if (_kbdd.focus_win == focused_win )  //this hack will not save us in case ok KDE+Awesome
@@ -457,6 +474,7 @@ kbdd_set_current_window_layout ( uint32_t layout)
         //else
         kbdd_real_lock(layout);
     }
+    _kbdd_release();
     dbg("set window layout %u",layout);
 }
 
@@ -468,11 +486,10 @@ kbdd_set_previous_layout(void)
     dbg("set previous layout"); 
     if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
     {
-        uint32_t group = _kbdd_perwindow_get_prev(focused_win);
+        uint32_t group = _kbdd_perwindow_get_prev(focused_win);//not thread safe
         dbg("group %u",group);
         kbdd_set_current_window_layout( group );
     }
-    
 }
 
 
@@ -586,4 +603,13 @@ kbdd_real_lock(int group) {
 
 
 //vim:ts=4:expandtab
+inline void
+_kbdd_accure() {
+    while(_kbdd.kbddLock);
+    _kbdd.kbddLock = 1;
+}
 
+inline void
+_kbdd_release() {
+    _kbdd.kbddLock = 0;
+}
