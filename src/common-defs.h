@@ -26,8 +26,21 @@
 
 #ifdef DEBUG
 #include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+//void current() {
+//    size_t s=strftime(_tout,12,"[%H:%M:%S]",localtime(NULL));
+//    _tout[s+1] = NULL;
+//}
 #define dbg(fmtstr,args...) \
-    (printf(PACKAGE_NAME" :%s " fmtstr "\n",__func__,##args))
+    do { \
+     char _tout[64]; \
+     time_t * _tmt = time(NULL); \
+     struct tm * _tm = localtime(&_tmt); \
+     size_t s=strftime(&_tout,12,"[%H:%M:%S]",_tm); \
+     _tout[s+1] = NULL; \
+     printf("%s %s " fmtstr "\n",_tout,__func__,##args); \
+     } while (0)
 #else
 #define dbg(dummy...)
 #endif
