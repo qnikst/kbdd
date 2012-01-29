@@ -178,11 +178,11 @@ int dbus_init( ) {
 
 void onLayoutUpdate(uint32_t layout, void * obj) 
 {
-    dbg(" EVENT LAYOUT CHANGED %u", layout);
+//    dbg(" EVENT LAYOUT CHANGED %u", layout);
     char * layout_name = NULL;
     int result =  kbdd_get_layout_name(layout, &layout_name);
     if ( ! result ) layout_name = NULL;
-    dbg(" Keyboard layout %s", layout_name);
+//    dbg(" Keyboard layout %s", layout_name);
     m_kbdd_service_update_layout((MKbddService *)obj, layout, layout_name);
     if (layout_name)
       free(layout_name);
@@ -191,7 +191,7 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 
 int main(int argc, char * argv[])
 {
-    dbg("kbdd starting WITH debug");
+//    dbg("kbdd starting WITH debug");
     
     /**
      * get options part

@@ -56,11 +56,10 @@ _kbdd_perwindow_put(WINDOW_TYPE win, GROUP_TYPE group)
     if ( g_hash_table_lookup_extended(gStorage, pWindow, &key, &value) )
     {
         GROUP_TYPE oldv = (GROUP_TYPE)( GPOINTER_TO_UINT(value) & 0xFF);
-        dbg("switching from %u |->new %u", oldv, group);
-        if ( oldv != group )
-          value = GUINT_TO_POINTER( ( oldv << 8 ) | ( group & 0xFF ) );
-        dbg("value %p",value);
-        //value = GUINT_TO_POINTER( ((GPOINTER_TO_UINT(value) & 0xFF) << 8) | (group & 0xFF)) ;
+        if ( oldv != group ) {
+            dbg("switching from %u |->new %u", oldv, group);
+            value = GUINT_TO_POINTER( ( oldv << 8 ) | ( group & 0xFF ) );
+        }
     }
     else 
     {
@@ -147,7 +146,7 @@ void debug() {
     gpointer *key_;
     while (g_hash_table_iter_next (&iter, (gpointer) &key_, (gpointer) &val))
     {
-        printf("key %u ---> %u \n",GPOINTER_TO_UINT(key_),GPOINTER_TO_UINT(val));
+        printf("key %p ---> %u \n",GPOINTER_TO_UINT(key_),GPOINTER_TO_UINT(val));
     }
     printf("=================\n");
 }

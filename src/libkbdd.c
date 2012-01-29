@@ -64,6 +64,7 @@ typedef struct _KbddStructure {
     int _xkbEventType;
     int prevGroup;
     int kbddLock;
+    Atom atom_netActiveWindow;
     Window focus_win;
     Display * display;
     Window root_window;
@@ -140,6 +141,7 @@ _kbdd_initialize_display( )
     int mnr = XkbMinorVersion;
     display = XkbOpenDisplay(display_name,&xkbEventType,&xkbError, &mjr,&mnr,&reason_rtrn);
     _kbdd._xkbEventType = xkbEventType;
+    _kbdd.atom_netActiveWindow = XInternAtom(display, "_NET_ACTIVE_WINDOW", 0);
     return display;
 }
 
@@ -244,21 +246,27 @@ _on_destroyEvent(XEvent *e)
     Kbdd_remove_window(ev->window);
 }
 
+/**
+ * Property event handler
+ * @global _kbdd
+ */
 static void
 _on_propertyEvent(XEvent *e) 
 {
     XSetErrorHandler(_xerrordummy);
     XPropertyEvent * ev = &e->xproperty;
     if (ev->state==0) return;
+    /*
     if (ev->window == _kbdd.focus_win)
         return;
-    _kbdd_focus_window(ev->window);
     dbg("property event");
+    XSync(ev->display, 0);*/
+    if (ev->atom!=_kbdd.atom_netActiveWindow) return;
+    _kbdd_focus_window(ev->window);
     int revert;
-    Window focused_win;
-    XGetInputFocus(ev->display, &focused_win, &revert);
-    kbdd_set_window_layout(ev->display, /*ev->window,*/ focused_win);
-    XSync(ev->display, 0);
+    //Window focused_win;
+    //XGetInputFocus(ev->display, &focused_win, &revert);
+    kbdd_set_window_layout(ev->display, ev->window);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
 }
@@ -602,7 +610,6 @@ kbdd_real_lock(int group) {
 
 
 
-//vim:ts=4:expandtab
 inline void
 _kbdd_accure() {
     while(_kbdd.kbddLock);
@@ -613,3 +620,4 @@ inline void
 _kbdd_release() {
     _kbdd.kbddLock = 0;
 }
+//vim:ts=4:expandtab
