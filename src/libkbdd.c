@@ -199,24 +199,18 @@ kbdd_default_loop(Display * display)
 /******************************************************************************
  *  Inner iterations
  *****************************************************************************/
-inline void
-_kbdd_proceed_event(XkbEvent ev)
-{
-    if (ev.type == _kbdd._xkbEventType )
-        _on_xkbEvent(ev);
-    else
-        if ( handler[ev.type] )
-            handler[ev.type](&ev.core);
-}
 
 inline void
 _kbdd_inner_iter(Display * display)
 {
     assert(display != NULL);
-    Window focused_win;
     XkbEvent ev;
     XNextEvent( display, &ev.core);
-    _kbdd_proceed_event(ev);
+    if (ev.type == _kbdd._xkbEventType)
+        _on_xkbEvent(ev)
+    else
+        if ( handler[ev.type] )
+            handler[ev.type](&ev.core);
 }
 
 /**
@@ -241,7 +235,6 @@ _on_destroyEvent(XEvent *e)
     dbg("destroy event");
     XSetErrorHandler(_xerrordummy);
     XDestroyWindowEvent * ev = &e->xdestroywindow;
-    XSync(ev->display, 0);
     dbg("destroying window %u",(uint32_t)ev->window);
     Kbdd_remove_window(ev->window);
 }
@@ -309,7 +302,6 @@ _on_enterEvent(XEvent *e)
             && ev->window != _kbdd.root_window ) 
         return;
     _kbdd_focus_window(ev->window);
-    XSync(ev->display, 0);
     dbg("enter event");
     return;
 }
@@ -404,7 +396,6 @@ _init_windows(Display * display)
             XSetErrorHandler(_xerrordummy);
             if ( ! XGetWindowAttributes(display, wins[i], &wa) )
                 continue;
-            XSync(display, 0);
             _kbdd_assign_window( display, wins[i] );
         }
         if (wins) XFree(wins);
@@ -607,8 +598,6 @@ kbdd_real_lock(int group) {
     }
     return result;
 }
-
-
 
 inline void
 _kbdd_accure() {
