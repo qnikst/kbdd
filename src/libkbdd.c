@@ -207,19 +207,22 @@ _kbdd_inner_iter(Display * display)
     XkbEvent ev;
     XNextEvent( display, &ev.core);
     if (ev.type == _kbdd._xkbEventType)
-        _on_xkbEvent(ev)
+        _on_xkbEvent(ev);
     else
         if ( handler[ev.type] )
             handler[ev.type](&ev.core);
 }
 
-/**
+/*****************************************************************************
  *  X11 Events actions
  *  
  *  here we add an additional actions for X11 events
- *
- *
- *
+ ****************************************************************************/
+
+/**
+ * Create window event [http://www.xfree86.org/current/XCreateWindowEvent.3.html]
+ *  - add new window to storage
+ *  - TODO: use ev.parent to inherit layout
  */
 static void 
 _on_createEvent(XEvent *e )
@@ -229,6 +232,10 @@ _on_createEvent(XEvent *e )
     _kbdd_add_window(ev->window, 0);
 }
 
+/**
+ * Destroy window [http://www.xfree86.org/current/XDestroyWindowEvent.3.html]
+ *  - remove window from storage
+ */
 static void 
 _on_destroyEvent(XEvent *e)
 {
@@ -240,7 +247,9 @@ _on_destroyEvent(XEvent *e)
 }
 
 /**
- * Property event handler
+ * Property event handler [http://www.xfree86.org/current/XPropertyEvent.3.html]
+ *  - check that this is NetActive Property and that this property is set
+ *
  * @global _kbdd
  */
 static void
@@ -248,13 +257,13 @@ _on_propertyEvent(XEvent *e)
 {
     XSetErrorHandler(_xerrordummy);
     XPropertyEvent * ev = &e->xproperty;
-    if (ev->state==0) return;
     /*
     if (ev->window == _kbdd.focus_win)
         return;
     dbg("property event");
     XSync(ev->display, 0);*/
-    if (ev->atom!=_kbdd.atom_netActiveWindow) return;
+    if (ev->atom!=_kbdd.atom_netActiveWindow 
+            || ev->state != PropertyDelete) return;
     _kbdd_focus_window(ev->window);
     int revert;
     //Window focused_win;
@@ -264,6 +273,11 @@ _on_propertyEvent(XEvent *e)
     //dbg("focused window: %u (%i)",focused_win,revert);
 }
 
+/**
+ * Focus Event Handler [http://www.xfree86.org/current/XFocusChangeEvent.3.html]
+ *  - set currently selected window
+ *  - set window layout
+ */
 static void
 _on_focusEvent(XEvent *e)
 {
@@ -290,6 +304,10 @@ _on_focusEvent(XEvent *e)
 }
 
 
+/**
+ * Crossing event (enter/leave) [http://www.xfree86.org/current/XCrossingEvent.3.html]
+ *  
+ */
 static void
 _on_enterEvent(XEvent *e)
 {
