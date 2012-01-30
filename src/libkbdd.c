@@ -260,8 +260,7 @@ _on_propertyEvent(XEvent *e)
     /*
     if (ev->window == _kbdd.focus_win)
         return;
-    dbg("property event");
-    XSync(ev->display, 0);*/
+    dbg("property event");*/
     if (ev->atom!=_kbdd.atom_netActiveWindow 
             || ev->state != PropertyDelete) return;
     _kbdd_focus_window(ev->window);
@@ -300,7 +299,6 @@ _on_focusEvent(XEvent *e)
     int revert;
     XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
-    XSync(ev->display, 0);
 }
 
 
@@ -398,7 +396,6 @@ _kbdd_assign_window(Display * display, Window window)
     if ( ! XGetWindowAttributes(display,window,&wa) ) 
         return;
     XSelectInput( display, window, w_events);
-    XSync(display, 0);
 }
 
 __inline__ void
@@ -462,6 +459,7 @@ kbdd_set_window_layout ( Display * display, Window win )
             _updateCallback(group, (void *)_updateUserdata);
         }
     }
+    XSync(display, 0);
     _kbdd_release();
     return result;
 }
