@@ -173,7 +173,7 @@ m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char ** value
     char * tmp; 
     if ( kbdd_get_layout_name(id, &tmp) ) 
     {
-        dbg("returned: %s", tmp);
+//        dbg("returned: %s", tmp);
 //      dbg("value addr %p", *value);
         *value = tmp;
         return 1;
@@ -194,7 +194,7 @@ m_kbdd_service_update_layout(MKbddService *obj, uint32_t value, const char * lay
         obj->layout = value;
         MKbddServiceClass * klass = M_KBDD_SERVICE_GET_CLASS(obj);
         assert(klass != NULL);
-        dbg(" set layout event (emmitting signal)");
+//        dbg(" set layout event (emmitting signal)");
         g_signal_emit(obj, klass->signals[E_SIGNAL_LAYOUT_CHANGED], 0, value);
         if (layout_name != NULL)
         {
@@ -208,7 +208,7 @@ int
 m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError **error) 
 {
     //TODO check min max value
-    dbg("dbus-set layout %u",value);
+//    dbg("dbus-set layout %u",value);
     kbdd_set_current_window_layout(value);
     return 1;
 }

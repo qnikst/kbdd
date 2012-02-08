@@ -34,12 +34,13 @@
 //}
 #define dbg(fmtstr,args...) \
     do { \
-     char _tout[64]; \
+     /*char _tout[64]; \
      time_t * _tmt = time(NULL); \
-     struct tm * _tm = localtime(&_tmt); \
-     size_t s=strftime(&_tout,12,"[%H:%M:%S]",_tm); \
+     struct tm _tm = localtime(_tmt); \
+     size_t s=strftime((char *)&_tout,12,"[%H:%M:%S]",&_tm); \
      _tout[s+1] = NULL; \
-     printf("%s %s " fmtstr "\n",_tout,__func__,##args); \
+     printf("%s %s " fmtstr "\n",(char *)_tout,__func__,##args);*/ \
+     printf(fmtstr "\n",##args); \
      } while (0)
 #else
 #define dbg(dummy...)
