@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <getopt.h>
 
+#define XLIB_ILLEGAL_ACCESS 
 #include <X11/Xlib.h>
 #include <errno.h>
 
@@ -56,6 +57,34 @@ DBusGConnection * bus  = NULL;
 DBusGProxy * proxy     = NULL;
 #endif
 
+typedef struct _x11_source {
+      GSource source;
+} x11_source_t;
+
+
+static gboolean
+x11_fd_prepare(GSource *source,
+                   gint *timeout)
+{
+      *timeout = -1;
+        return FALSE;
+}
+
+static gboolean
+x11_fd_check (GSource *source)
+{
+      return TRUE;
+}
+
+static gboolean
+x11_fd_dispatch(GSource* source, GSourceFunc callback, gpointer user_data)
+{
+    kbdd_default_iter(NULL);
+    return TRUE;
+}
+
+
+//main
 int main_fork()
 {
     pid_t pid,sid;
@@ -282,8 +311,24 @@ int main(int argc, char * argv[])
     kbdd_default_loop( NULL );
 #else
     kbdd_setupUpdateCallback(onLayoutUpdate, service);
-    //g_timeout_add(100, kbdd_default_iter, mainloop);
-    GThread * t = g_thread_create(kbdd_default_loop, NULL, FALSE, NULL);
+    Display * dpy;
+    dpy = (Display *)kbdd_get_display();
+    GPollFD dpy_pollfd = {(struct _XDisplay*)dpy->fd, 
+        G_IO_IN | G_IO_HUP | G_IO_ERR, 
+        0};
+
+    GSourceFuncs x11_source_funcs = {
+       x11_fd_prepare,
+       x11_fd_check,
+       x11_fd_dispatch,
+       NULL, /* finalize */
+       NULL, /* closure_callback */
+       NULL /* closure_marshal */
+    };
+
+    GSource *x11_source = g_source_new(&x11_source_funcs, sizeof(x11_source_t));
+    g_source_add_poll(x11_source, &dpy_pollfd);
+    g_source_attach(x11_source, NULL);
     g_main_loop_run(mainloop);
 #endif
     kbdd_free();
@@ -305,5 +350,9 @@ void main_version()
 {
     printf("kbdd " VERSION ", see -h/--help for brief info\n");
 }
+
+
+
+
 
 //vim:ts=4:expandtab 

@@ -152,6 +152,9 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
     _updateUserdata = userData;
 }
 
+Display * kbdd_get_display() {
+    return _kbdd.display;
+}
 /**
  * @global root_events
  * @global _kbdd

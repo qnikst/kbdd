@@ -61,5 +61,7 @@ void * kbdd_default_loop();
 
 int kbdd_default_iter(void *);
 
+Display * kbdd_get_display();
+
 #endif
 //vim:ts=4:expandtab
