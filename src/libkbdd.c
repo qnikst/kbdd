@@ -58,10 +58,8 @@ inline int kbdd_real_lock(int);
 //<<prototypes
 
 typedef struct _KbddStructure {
-    int haveNames;
     int _xkbEventType;
     int prevGroup;
-    int kbddLock;
     Atom atom_netActiveWindow;
     Window focus_win;
     Display * display;
