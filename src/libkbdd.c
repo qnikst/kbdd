@@ -423,8 +423,6 @@ _kbdd_add_window(const Window window, const int accept_layout)
       {
           WINDOW_TYPE win = (WINDOW_TYPE)window;
           _kbdd_perwindow_put(win, state.group);
-          if ( state.group != _kbdd.prevGroup, _kbdd._updateCallback != NULL ) 
-              _kbdd._updateCallback(state.group, (void *)_kbdd._updateUserdata);
       }
     }
     return 0;
@@ -443,9 +441,7 @@ kbdd_set_window_layout ( Display * display, Window win )
     int result = 0;
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     if ( _kbdd.prevGroup != group ) {
-        if (kbdd_real_lock(group) && _kbdd._updateCallback != NULL) {
-            _kbdd._updateCallback(group, (void *)_kbdd._updateUserdata);
-        }
+        kbdd_real_lock(group);
     }
     XSync(display, 0);
     return result;
