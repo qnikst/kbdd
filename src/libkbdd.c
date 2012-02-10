@@ -66,10 +66,9 @@ typedef struct _KbddStructure {
     Window focus_win;
     Display * display;
     Window root_window;
+    UpdateCallback _updateCallback;
+    void * _updateUserdata;
 } KbddStructure;
-
-static volatile UpdateCallback    _updateCallback = NULL;
-static volatile void *            _updateUserdata = NULL;
 
 static KbddStructure       _kbdd;
 static unsigned char    _group_count;
@@ -143,8 +142,8 @@ _kbdd_initialize_display( )
 void 
 kbdd_setupUpdateCallback(UpdateCallback callback,void * userData ) 
 {
-    _updateCallback = callback;
-    _updateUserdata = userData;
+    _kbdd._updateCallback = callback;
+    _kbdd._updateUserdata = userData;
 }
 
 Display * kbdd_get_display() {
@@ -424,8 +423,8 @@ _kbdd_add_window(const Window window, const int accept_layout)
       {
           WINDOW_TYPE win = (WINDOW_TYPE)window;
           _kbdd_perwindow_put(win, state.group);
-          if ( state.group != _kbdd.prevGroup, _updateCallback != NULL ) 
-              _updateCallback(state.group, (void *)_updateUserdata);
+          if ( state.group != _kbdd.prevGroup, _kbdd._updateCallback != NULL ) 
+              _kbdd._updateCallback(state.group, (void *)_kbdd._updateUserdata);
       }
     }
     return 0;
@@ -444,8 +443,8 @@ kbdd_set_window_layout ( Display * display, Window win )
     int result = 0;
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     if ( _kbdd.prevGroup != group ) {
-        if (kbdd_real_lock(group) && _updateCallback != NULL) {
-            _updateCallback(group, (void *)_updateUserdata);
+        if (kbdd_real_lock(group) && _kbdd._updateCallback != NULL) {
+            _kbdd._updateCallback(group, (void *)_kbdd._updateUserdata);
         }
     }
     XSync(display, 0);
@@ -458,8 +457,8 @@ _kbdd_update_window_layout ( Window window, unsigned char grp )
     WINDOW_TYPE win = (WINDOW_TYPE) window;
     GROUP_TYPE  g   = (GROUP_TYPE)grp;
     _kbdd_perwindow_put(win, g);
-    if ( _updateCallback != NULL ) 
-        _updateCallback(g, (void *)_updateUserdata);
+    if ( _kbdd._updateCallback != NULL ) 
+        _kbdd._updateCallback(g, (void *)_kbdd._updateUserdata);
 }
 
 void 
