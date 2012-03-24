@@ -252,16 +252,11 @@ _on_propertyEvent(XEvent *e)
 {
     XSetErrorHandler(_xerrordummy);
     XPropertyEvent * ev = &e->xproperty;
-    /*
-    if (ev->window == _kbdd.focus_win)
-        return;
-    dbg("property event");*/
-    if (ev->atom!=_kbdd.atom_netActiveWindow 
-            || ev->state != PropertyDelete) return;
+    if (ev->window!=_kbdd.root_window
+		    || ev->atom!=_kbdd.atom_netActiveWindow)
+	    return;
     _kbdd_focus_window(ev->window);
     int revert;
-    //Window focused_win;
-    //XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(ev->display, ev->window);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
