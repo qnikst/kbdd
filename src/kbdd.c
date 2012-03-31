@@ -34,7 +34,6 @@
 #ifdef ENABLE_DBUS
 #include <pthread.h>
 #include <glib.h>
-#include <glib/gthread.h>
 #include "dbus/m-kbdd-service.h"
 #include "dbus/kbdd-service-glue.h"
 #endif
