@@ -173,8 +173,8 @@ int
 kbdd_default_iter(void * data)
 {
     assert( _kbdd.display != NULL );
-    while ( XPending( _kbdd.display ) ) 
-        _kbdd_inner_iter(_kbdd.display);
+//    while ( XPending( _kbdd.display ) ) 
+    _kbdd_inner_iter(_kbdd.display);
     return 1;
 }
 
