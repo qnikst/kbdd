@@ -264,15 +264,10 @@ _on_focusEvent(XEvent *e)
     Window focused_win;
     if (ev->window == _kbdd.focus_win) 
         return;
-
-    if ( (ev->mode == NotifyGrab) ) {
-      focused_win = ev->window;
-    } else {
-      _kbdd_focus_window(ev->window);    
-      dbg("focus event %u", (uint32_t)ev->window);
-      int revert;
-      XGetInputFocus(ev->display, &focused_win, &revert);
-    }
+    _kbdd_focus_window(ev->window);
+    dbg("focus event %u", (uint32_t)ev->window);
+    int revert;
+    XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
     XSync(ev->display, 0);
 }
@@ -286,7 +281,7 @@ _on_enterEvent(XEvent *e)
     if ( (ev->mode == NotifyGrab) || (ev->mode == NotifyUngrab)) {
         dbg("mode: %i",ev->mode);
     }
-    if ( (ev->mode != NotifyNormal || ev->detail == NotifyInferior) 
+    if ( (ev->mode != NotifyNormal || ev->detail == NotifyInferior)
             && ev->window != _kbdd.root_window ) 
         return;
     _kbdd_focus_window(ev->window);
@@ -322,12 +317,17 @@ _on_xkbEvent(XkbEvent ev)
     {
         case XkbStateNotify:
             dbg( "LIBKBDD state notify event\n");
-            uint32_t grp = ev.state.group;
-            Window focused_win;
-            int revert;
-            XGetInputFocus( ev.any.display, &focused_win, &revert);      
-            if (grp == ev.state.locked_group) //do not save layout with modifier
-                _kbdd_update_window_layout( focused_win, grp);
+            if (ev.state.keycode) {
+                dbg("... state change due to a key press, processing ...");
+                uint32_t grp = ev.state.group;
+                Window focused_win;
+                int revert;
+                XGetInputFocus( ev.any.display, &focused_win, &revert);
+                if (grp == ev.state.locked_group) //do not save layout with modifier
+                    _kbdd_update_window_layout( focused_win, grp);
+            } else {
+                dbg("... programmatic event, skipping ...");
+            }
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
@@ -442,12 +442,8 @@ kbdd_set_current_window_layout ( uint32_t layout)
     Window focused_win;
     int revert;
     if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
-    {
-        if (_kbdd.focus_win == focused_win )  //this hack will not save us in case ok KDE+Awesome
-            _kbdd_perwindow_put(focused_win, layout);
-        //else
-        XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout);
-    }
+        if ( XkbLockGroup( _kbdd.display, XkbUseCoreKbd, layout) )
+            _kbdd_update_window_layout(focused_win, layout);
     dbg("set window layout %u",layout);
 }
 
