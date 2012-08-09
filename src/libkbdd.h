@@ -38,7 +38,7 @@ void kbdd_free();
 /**
  * Update window layout
  */
-int  kbdd_set_window_layout(Display *,Window); 
+int  kbdd_set_window_layout(Window); 
 
 /**
  *  Remove window info from storage

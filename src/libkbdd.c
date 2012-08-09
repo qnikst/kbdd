@@ -15,15 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-#include <X11/Xmd.h>
-#include <X11/keysym.h>
+#include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <stdio.h>
+#include <X11/keysym.h>
+#include <X11/Xatom.h>
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xmd.h>
 
 #include "libkbdd.h"
 #include "common-defs.h"
@@ -38,13 +39,13 @@ inline void _kbdd_assign_window(Display *display,Window window);
 inline void _kbdd_group_names_initialize();
 inline void _kbdd_inner_iter(Display * display);
 inline void _kbdd_clean_groups_info();
-__inline__ void _init_windows(Display * display);
 static void _kbdd_update_window_layout(Window window, unsigned char grp);
 static int  _kbdd_add_window(const Window window, const int accept_layout);
 static Display *  _kbdd_initialize_display();
 static void _kbdd_initialize_listeners();
 inline void _kbdd_focus_window(Window w);
 inline void _kbdd_proceed_event(XkbEvent ev);
+static void _get_active_window(Window *win);
 static void _on_enterEvent(XEvent *e);
 static void _on_createEvent(XEvent *e);
 static void _on_destroyEvent(XEvent *e);
@@ -90,10 +91,11 @@ const static long w_events = EnterWindowMask
                            ;
 const static long root_events = StructureNotifyMask
                               | SubstructureNotifyMask
+                              | PropertyChangeMask
+                              | FocusChangeMask
+                              | KeymapStateMask
                               | LeaveWindowMask
                               | EnterWindowMask
-                              | FocusChangeMask
-                              | KeymapStateMask;
                               ;
 
 /******************************************************************************
@@ -127,7 +129,7 @@ Display *
 _kbdd_initialize_display( )
 {
     Display * display;
-    int xkbEventType,xkbError,  reason_rtrn;
+    int xkbEventType, xkbError, reason_rtrn;
     char * display_name = NULL;
     int mjr = XkbMajorVersion;
     int mnr = XkbMinorVersion;
@@ -157,13 +159,20 @@ _kbdd_initialize_listeners()
     dbg("Kbdd_initialize_listeners");
     assert(_kbdd.display!=NULL);
     dbg("keyboard initialized");
+    XWindowAttributes wa;
     int scr = DefaultScreen( _kbdd.display );
-    _kbdd.root_window = RootWindow( _kbdd.display, scr );
-    dbg("attating to window %u\n",(uint32_t)_kbdd.root_window);
+    _kbdd.root_window = DefaultRootWindow( _kbdd.display);
+    XGetWindowAttributes(_kbdd.display, _kbdd.root_window, &wa);
+    dbg("attaching to root window %u\n",(uint32_t)_kbdd.root_window);
+    XSelectInput(_kbdd.display, _kbdd.root_window, root_events | wa.your_event_mask);
     XkbSelectEventDetails( _kbdd.display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
-    XSelectInput(_kbdd.display, _kbdd.root_window, root_events);
-    _init_windows(_kbdd.display);
+    int n;
+    Atom * atoms = XListProperties(_kbdd.display, _kbdd.root_window, &n);
+    size_t i;
+    for (i=0;i<n;i++) {
+        dbg("%s",XGetAtomName(_kbdd.display,atoms[i]));
+    }
 }
 
 /**
@@ -203,9 +212,11 @@ _kbdd_inner_iter(Display * display)
     XNextEvent( display, &ev.core);
     if (ev.type == _kbdd._xkbEventType)
         _on_xkbEvent(ev);
-    else
+    else {
+        dbg("%u %u",PropertyNotify,ev.type);
         if ( handler[ev.type] )
             handler[ev.type](&ev.core);
+    }
 }
 
 /*****************************************************************************
@@ -250,14 +261,11 @@ _on_destroyEvent(XEvent *e)
 static void
 _on_propertyEvent(XEvent *e) 
 {
-    XSetErrorHandler(_xerrordummy);
+    dbg("property");
     XPropertyEvent * ev = &e->xproperty;
-    if (ev->window!=_kbdd.root_window
-		    || ev->atom!=_kbdd.atom_netActiveWindow)
-	    return;
-    _kbdd_focus_window(ev->window);
-    int revert;
-    kbdd_set_window_layout(ev->display, ev->window);
+    Window w;
+    _get_active_window(&w);
+    kbdd_set_window_layout(w);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
 }
@@ -270,25 +278,12 @@ _on_propertyEvent(XEvent *e)
 static void
 _on_focusEvent(XEvent *e)
 {
+    dbg("focus");
     XSetErrorHandler(_xerrordummy);
     XFocusChangeEvent *ev = &e->xfocus;
     Window focused_win;
-    if (ev->window == _kbdd.focus_win) 
-        return;
-
-/*  This function do not work as needed
- *  TODO: remember why did I add this
- *        or totally delete
- *
- *  if ( (ev->mode == NotifyGrab) ) {
-      focused_win = ev->window;
-    } else {
-      _kbdd_focus_window(ev->window);    
-      dbg("focus event %u", (uint32_t)ev->window);
-    }*/
-    int revert;
-    XGetInputFocus(ev->display, &focused_win, &revert);
-    kbdd_set_window_layout(ev->display, /*ev->window);*/ focused_win);
+    _get_active_window(&focused_win);
+    kbdd_set_window_layout(focused_win);
 }
 
 
@@ -342,7 +337,8 @@ _on_xkbEvent(XkbEvent ev)
             uint32_t grp = ev.state.group;
             Window focused_win;
             int revert;
-            XGetInputFocus( ev.any.display, &focused_win, &revert);      
+            _get_active_window(&focused_win);
+//            XGetInputFocus( ev.any.display, &focused_win, &revert);      
             if (grp == ev.state.locked_group) //do not save layout with modifier
                 _kbdd_update_window_layout( focused_win, grp);
             break;
@@ -375,32 +371,7 @@ _xerrordummy(Display *dpy, XErrorEvent *ee)
 inline void 
 _kbdd_assign_window(Display * display, Window window)
 {
-    static XWindowAttributes wa;
-    if ( window == 0 ) return;
-    assert(display!=NULL);
-    XSetErrorHandler(_xerrordummy);
-    if ( ! XGetWindowAttributes(display,window,&wa) ) 
-        return;
-    XSelectInput( display, window, w_events);
-}
-
-__inline__ void
-_init_windows(Display * display)
-{
-    unsigned int i, num;
-    Window d1,d2,*wins = NULL;
-    XWindowAttributes wa;
-    if ( XQueryTree(display, _kbdd.root_window, &d1, &d2, &wins, &num) )
-    {
-        for ( i=0; i < num; i++ )
-        {
-            XSetErrorHandler(_xerrordummy);
-            if ( ! XGetWindowAttributes(display, wins[i], &wa) )
-                continue;
-            _kbdd_assign_window( display, wins[i] );
-        }
-        if (wins) XFree(wins);
-    }
+    return;
 }
 
 static int 
@@ -428,15 +399,14 @@ void Kbdd_remove_window(Window window)
 }
 
 int 
-kbdd_set_window_layout ( Display * display, Window win ) 
+kbdd_set_window_layout ( Window win ) 
 {
-    //if (win==_kbdd.focus_win) return 1; //HACK maybe doesn't need it
+    if (win == None) return;
     int result = 0;
     GROUP_TYPE group = _kbdd_perwindow_get( (WINDOW_TYPE)win );
     if ( _kbdd.prevGroup != group ) {
         kbdd_real_lock(group);
     }
-    XSync(display, 0);
     return result;
 }
 
@@ -455,7 +425,8 @@ kbdd_set_current_window_layout ( uint32_t layout)
 {
     Window focused_win;
     int revert;
-    if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
+    _get_active_window(&focused_win);
+    if ( focused_win != None )
     {
         if (_kbdd.focus_win == focused_win )  //this hack will not save us in case ok KDE+Awesome
             _kbdd_perwindow_put(focused_win, layout);
@@ -471,7 +442,8 @@ kbdd_set_previous_layout(void)
     Window focused_win;
     int revert;
     dbg("set previous layout"); 
-    if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
+    _get_active_window(&focused_win);
+    if ( focused_win != None )
     {
         uint32_t group = _kbdd_perwindow_get_prev(focused_win);//not thread safe
         dbg("group %u",group);
@@ -504,7 +476,8 @@ kbdd_set_next_layout()
     Window focused_win;
     int revert;
     dbg("set next layout");
-    if ( XGetInputFocus( _kbdd.display, &focused_win, &revert) )
+    _get_active_window(&focused_win);
+    if ( focused_win != None )
     {
         uint32_t group = _kbdd_perwindow_get(focused_win) + 1;
         if ( group >= _group_count ) 
@@ -587,4 +560,20 @@ kbdd_real_lock(int group) {
     return result;
 }
 
+void _get_active_window(Window *win) {
+    Atom actualType;
+    int  actualFormat;
+    long unsigned int nItems, bytesAfter;
+    unsigned char *propReturn = 0;
+    int ret;
+    ret =  XGetWindowProperty(_kbdd.display,_kbdd.root_window, _kbdd.atom_netActiveWindow, 0, sizeof(Window), 0, XA_WINDOW,
+                        &actualType, &actualFormat, &nItems, &bytesAfter, &propReturn);
+    if ( ret == Success && propReturn) {
+        memcpy(win, propReturn, sizeof(Window));
+        XFree(propReturn);
+    } else {
+        dbg("XGetWindowProperty error %u %u %u %u",BadAtom, BadValue, BadWindow, ret);
+    }
+    dbg("active window %u", *win);
+}
 //vim:ts=4:expandtab

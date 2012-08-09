@@ -10,6 +10,8 @@ Features
   * dbus interface
   * set layout group by its number
   * switch to the previous layout 
+  * kbdd supports only EWMH compatible systems, if you need support for
+    others, please request
 
 Requirements
 ------------
