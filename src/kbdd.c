@@ -69,10 +69,19 @@ x11_fd_prepare(GSource *source,
         return FALSE;
 }
 
+// Bug #22. We need to check if we really have an event
+// or were interrupted by DBus activity, thanks for
+// the fix to vladimir-g
 static gboolean
 x11_fd_check (GSource *source)
 {
-      return TRUE;
+
+      Display * dpy;
+      dpy = kbdd_get_display();
+      if (XPending(dpy))
+          return TRUE;
+      else
+          return FALSE;
 }
 
 static gboolean
