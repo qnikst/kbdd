@@ -309,7 +309,9 @@ int main(int argc, char * argv[])
     mainloop = g_main_loop_new(NULL,FALSE);
     if ( !g_thread_supported () ) {
         dbg("gthread not supported  - initializing");
+#if !GLIB_CHECK_VERSION(2,31,0)
         g_thread_init ( NULL );
+#endif
     }
     dbus_g_thread_init ();
     dbus_init();

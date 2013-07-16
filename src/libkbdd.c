@@ -46,13 +46,17 @@ static void _kbdd_initialize_listeners();
 inline void _kbdd_focus_window(Window w);
 inline void _kbdd_proceed_event(XkbEvent ev);
 static void _get_active_window(Window *win);
+static void _get_active_window_fallback(Display *, Window *);
 static void _on_enterEvent(XEvent *e);
 static void _on_createEvent(XEvent *e);
 static void _on_destroyEvent(XEvent *e);
-static void _on_propertyEvent(XEvent *e);
-static void _on_focusEvent(XEvent *e);
+static void _on_propertyEvent_ewmh(XEvent *e);
+static void _on_propertyEvent_generic(XEvent *e);
+static void _on_focusEvent_ewmh(XEvent *e);
+static void _on_focusEvent_generic(XEvent *e);
 static void _on_mappingEvent(XEvent *e);
 static void _on_keypressEvent(XEvent *e);
+int is_ehwm_supported();
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
 inline void _on_xkbEvent(XkbEvent ev);
 inline int kbdd_real_lock(int);
@@ -61,6 +65,7 @@ inline int kbdd_real_lock(int);
 typedef struct _KbddStructure {
     int _xkbEventType;
     int prevGroup;
+    int supportEWMH;
     Atom atom_netActiveWindow;
     Window focus_win;
     Display * display;
@@ -73,14 +78,25 @@ static KbddStructure       _kbdd;
 static unsigned char    _group_count;
 static char * * _group_names;
 
-static void (*handler[LASTEvent]) (XEvent *) = {
+static void (*handler_ewmh[LASTEvent]) (XEvent *) = {
     [EnterNotify]    = _on_enterEvent,
-    [FocusIn]        = _on_focusEvent,
-    [FocusOut]       = _on_focusEvent,
-    [PropertyNotify] = _on_propertyEvent,
+    [FocusIn]        = _on_focusEvent_ewmh,
+    [FocusOut]       = _on_focusEvent_ewmh,
+    [PropertyNotify] = _on_propertyEvent_ewmh, //28
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
-    [MappingNotify]  = _on_mappingEvent,
+//    [MappingNotify]  = _on_mappingEvent,
+//    [KeymapNotify]   = _on_mappingEvent
+};
+
+static void (*handler_generic[LASTEvent]) (XEvent *) = {
+    [EnterNotify]    = _on_enterEvent,
+    [FocusIn]        = _on_focusEvent_generic,
+    [FocusOut]       = _on_focusEvent_generic,
+    [PropertyNotify] = _on_propertyEvent_generic,
+    [DestroyNotify]  = _on_destroyEvent,
+    [CreateNotify]   = _on_createEvent,
+//    [MappingNotify]  = _on_mappingEvent,
 //    [KeymapNotify]   = _on_mappingEvent
 };
 
@@ -163,16 +179,40 @@ _kbdd_initialize_listeners()
     int scr = DefaultScreen( _kbdd.display );
     _kbdd.root_window = DefaultRootWindow( _kbdd.display);
     XGetWindowAttributes(_kbdd.display, _kbdd.root_window, &wa);
-    dbg("attaching to root window %u\n",(uint32_t)_kbdd.root_window);
     XSelectInput(_kbdd.display, _kbdd.root_window, root_events | wa.your_event_mask);
+    dbg("attaching to root window %u\n",(uint32_t)_kbdd.root_window);
     XkbSelectEventDetails( _kbdd.display, XkbUseCoreKbd, XkbStateNotify,
                 XkbAllStateComponentsMask, XkbGroupStateMask);
-    int n;
-    Atom * atoms = XListProperties(_kbdd.display, _kbdd.root_window, &n);
-    size_t i;
-    for (i=0;i<n;i++) {
-        dbg("%s",XGetAtomName(_kbdd.display,atoms[i]));
+    // TODO extract methods for ewmh and generic cases
+    is_ehwm_supported();
+    if (_kbdd.supportEWMH) {
+        fprintf(stderr, "Initializing EWHM event listeners\n");
+        XkbSelectEventDetails( _kbdd.display, XkbUseCoreKbd, XkbStateNotify,
+                    XkbAllStateComponentsMask, XkbGroupStateMask);
+        int n;
+        Atom * atoms = XListProperties(_kbdd.display, _kbdd.root_window, &n);
+        size_t i;
+        for (i=0;i<n;i++) {
+            dbg("%s",XGetAtomName(_kbdd.display,atoms[i]));
+        }
+    } else {
+        fprintf(stderr, "Initializing generic event listeners\n");
+        unsigned int i, num;
+        Window d1,d2,*wins = NULL;
+        XWindowAttributes wa;
+        if ( XQueryTree(_kbdd.display, _kbdd.root_window, &d1, &d2, &wins, &num) )
+        {
+            for ( i=0; i < num; i++ )
+            {
+                XSetErrorHandler(_xerrordummy);
+                if ( ! XGetWindowAttributes(_kbdd.display, wins[i], &wa) )
+                    continue;
+                _kbdd_assign_window( _kbdd.display, wins[i] );
+            }
+            if (wins) XFree(wins);
+        }
     }
+
 }
 
 /**
@@ -213,9 +253,16 @@ _kbdd_inner_iter(Display * display)
     if (ev.type == _kbdd._xkbEventType)
         _on_xkbEvent(ev);
     else {
-        dbg("%u %u",PropertyNotify,ev.type);
-        if ( handler[ev.type] )
-            handler[ev.type](&ev.core);
+//        dbg("%u %u",FocusIn, ev.type);
+        if ( _kbdd.supportEWMH ) {
+            if ( handler_ewmh[ev.type] )
+                handler_ewmh[ev.type](&ev.core);
+        } else
+            if ( handler_generic[ev.type] ) {
+                handler_generic[ev.type](&ev.core);
+            } else {
+                dbg("no handler for %u", ev.type);
+            }
     }
 }
 
@@ -259,7 +306,7 @@ _on_destroyEvent(XEvent *e)
  * @global _kbdd
  */
 static void
-_on_propertyEvent(XEvent *e) 
+_on_propertyEvent_ewmh(XEvent *e) 
 {
     dbg("property");
     XPropertyEvent * ev = &e->xproperty;
@@ -270,19 +317,49 @@ _on_propertyEvent(XEvent *e)
     //dbg("focused window: %u (%i)",focused_win,revert);
 }
 
+static void
+_on_propertyEvent_generic(XEvent *e) 
+{
+    XSetErrorHandler(_xerrordummy);
+    XPropertyEvent * ev = &e->xproperty;
+    if (ev->window!=_kbdd.root_window
+		    || ev->atom!=_kbdd.atom_netActiveWindow)
+	    return;
+    _kbdd_focus_window(ev->window);
+    int revert;
+    kbdd_set_window_layout(ev->window);
+    dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
+    //dbg("focused window: %u (%i)",focused_win,revert);
+}
+
 /**
  * Focus Event Handler [http://www.xfree86.org/current/XFocusChangeEvent.3.html]
  *  - set currently selected window
  *  - set window layout
  */
 static void
-_on_focusEvent(XEvent *e)
+_on_focusEvent_ewmh(XEvent *e)
 {
     dbg("focus");
     XSetErrorHandler(_xerrordummy);
     XFocusChangeEvent *ev = &e->xfocus;
     Window focused_win;
     _get_active_window(&focused_win);
+    kbdd_set_window_layout(focused_win);
+}
+
+static void
+_on_focusEvent_generic(XEvent *e)
+{
+    dbg("focus in/out");
+    XSetErrorHandler(_xerrordummy);
+    XFocusChangeEvent *ev = &e->xfocus;
+    Window focused_win;
+    if (ev->window == _kbdd.focus_win) 
+        return;
+
+    int revert;
+    XGetInputFocus(ev->display, &focused_win, &revert);
     kbdd_set_window_layout(focused_win);
 }
 
@@ -337,8 +414,7 @@ _on_xkbEvent(XkbEvent ev)
             uint32_t grp = ev.state.group;
             Window focused_win;
             int revert;
-            _get_active_window(&focused_win);
-//            XGetInputFocus( ev.any.display, &focused_win, &revert);      
+            _get_active_window_fallback(ev.any.display, &focused_win);
             if (grp == ev.state.locked_group) //do not save layout with modifier
                 _kbdd_update_window_layout( focused_win, grp);
             break;
@@ -371,7 +447,14 @@ _xerrordummy(Display *dpy, XErrorEvent *ee)
 inline void 
 _kbdd_assign_window(Display * display, Window window)
 {
-    return;
+    if (_kbdd.supportEWMH) return;
+    static XWindowAttributes wa;
+    if ( window == 0 ) return;
+    assert(display!=NULL);
+    XSetErrorHandler(_xerrordummy);
+    if ( ! XGetWindowAttributes(display,window,&wa) ) 
+        return;
+    XSelectInput( display, window, w_events);
 }
 
 static int 
@@ -425,7 +508,7 @@ kbdd_set_current_window_layout ( uint32_t layout)
 {
     Window focused_win;
     int revert;
-    _get_active_window(&focused_win);
+    _get_active_window_fallback(_kbdd.display, &focused_win);
     if ( focused_win != None )
     {
         if (_kbdd.focus_win == focused_win )  //this hack will not save us in case ok KDE+Awesome
@@ -442,7 +525,7 @@ kbdd_set_previous_layout(void)
     Window focused_win;
     int revert;
     dbg("set previous layout"); 
-    _get_active_window(&focused_win);
+    _get_active_window_fallback(_kbdd.display, &focused_win);
     if ( focused_win != None )
     {
         uint32_t group = _kbdd_perwindow_get_prev(focused_win);//not thread safe
@@ -476,7 +559,7 @@ kbdd_set_next_layout()
     Window focused_win;
     int revert;
     dbg("set next layout");
-    _get_active_window(&focused_win);
+    _get_active_window_fallback(_kbdd.display, &focused_win);
     if ( focused_win != None )
     {
         uint32_t group = _kbdd_perwindow_get(focused_win) + 1;
@@ -575,5 +658,32 @@ void _get_active_window(Window *win) {
         dbg("XGetWindowProperty error %u %u %u %u",BadAtom, BadValue, BadWindow, ret);
     }
     dbg("active window %u", *win);
+}
+
+static void _get_active_window_fallback(Display * d, Window *win) {
+    if (_kbdd.supportEWMH) {
+        _get_active_window(win);
+    } else {
+        int revert;
+        XGetInputFocus( d, win, &revert);      
+    }
+}
+
+int is_ehwm_supported() {
+    Atom actualType;
+    int  actualFormat;
+    unsigned char *propReturn = 0;
+    long unsigned int nItems, bytesAfter;
+    int ret = XGetWindowProperty(_kbdd.display,_kbdd.root_window, _kbdd.atom_netActiveWindow, 0, sizeof(Window), 0, XA_WINDOW,
+                        &actualType, &actualFormat, &nItems, &bytesAfter, &propReturn);
+    if ( ret == Success && propReturn) {
+        XFree(propReturn);
+        _kbdd.supportEWMH = True;
+        fprintf(stderr,"EWMH is supported\n");
+    } else {
+        _kbdd.supportEWMH = False;
+        fprintf(stderr,"EWMH is not supported: switching to generic\n");
+    }
+    return _kbdd.supportEWMH;
 }
 //vim:ts=4:expandtab
