@@ -170,6 +170,8 @@ m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 int 
 m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char ** value, GError **error)
 {
+    assert( obj != NULL );
+    assert( value != NULL );
     char * tmp; 
     if ( kbdd_get_layout_name(id, &tmp) ) 
     {
@@ -178,7 +180,8 @@ m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char ** value
         *value = tmp;
         return 1;
     }
-    return 0;
+    *value = strdup("n/a");
+    return 1;
 }
 
 /**
