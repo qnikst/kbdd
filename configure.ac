@@ -5,7 +5,8 @@ AC_INIT([kbdd], [0.7], [qnikst@gentoo.ru])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS(config.h)
 
-AM_INIT_AUTOMAKE([kbdd], [0.6])
+AM_INIT_AUTOMAKE
+
 AC_SUBST(PACKAGE_URL, [http://github.com/qnikst/kbdd] )
 
 # Checks for programs.
