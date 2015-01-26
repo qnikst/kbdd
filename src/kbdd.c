@@ -319,7 +319,7 @@ int main(int argc, char * argv[])
     kbdd_setupUpdateCallback(onLayoutUpdate, service);
     Display * dpy;
     dpy = kbdd_get_display();
-    GPollFD dpy_pollfd = {(struct _XDisplay*)dpy->fd,
+    GPollFD dpy_pollfd = {dpy->fd,
         G_IO_IN | G_IO_HUP | G_IO_ERR,
         0};
 
