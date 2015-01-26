@@ -1,5 +1,5 @@
-/********************************************************************* 
- * Kbdd - simple per-window-keyboard layout library and deamon 
+/*********************************************************************
+ * Kbdd - simple per-window-keyboard layout library and deamon
  * Copyright (C) 2010  Alexander V Vershilov and collaborators
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 #include <getopt.h>
 
-#define XLIB_ILLEGAL_ACCESS 
+#define XLIB_ILLEGAL_ACCESS
 #include <X11/Xlib.h>
 #include <errno.h>
 
@@ -114,7 +114,7 @@ int main_fork()
     }
 
     sid = setsid();
-    if ( sid < 0 ) 
+    if ( sid < 0 )
     {
         fprintf(stderr,"Error: setsid failed: %s\n", strerror(errno));
         exit( EXIT_FAILURE );
@@ -127,12 +127,12 @@ int main_fork()
 
     for (i=numFiles-1;i>=0;i--)
         close(i);
-    
+
     umask(0);
 
     stdioFD = open("/dev/null",O_RDWR);
-    if ( ( dup(stdioFD) == -1 ) 
-            || ( dup(stdioFD) == -1) ) 
+    if ( ( dup(stdioFD) == -1 )
+            || ( dup(stdioFD) == -1) )
     {
         fprintf(stderr, "Error: unable to dup /dev/null\n");
         exit(EXIT_FAILURE);
@@ -147,13 +147,9 @@ int dbus_init( ) {
     unsigned int result;
     GError * error = NULL;
 
-    /* Initialize the GType/GObject system */
-    g_type_init();
-
-
     g_print(":main Connecting to the Session D-Bus.\n");
     bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if ( error != NULL ) 
+    if ( error != NULL )
     {
         fprintf(stderr,"Couldn't connect to session bus: %s\n",error->message);
         exit (EXIT_FAILURE);
@@ -162,26 +158,26 @@ int dbus_init( ) {
     printf(":main Regiresting the well-known name (%s)\n", M_DBUS_KBDD_SERVICE);
 
     /**
-     * In order to register a well-known name, we need to use the 
+     * In order to register a well-known name, we need to use the
      * "RequestMethod" of the /org/freedesktop/DBus interface. Each
      * bus provides an object that will implement this interface
      *
      */
     proxy = dbus_g_proxy_new_for_name(bus,
                 DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS);
-    if ( proxy == NULL) 
+    if ( proxy == NULL)
     {
         fprintf(stderr,"Failed to get a proxy for D-Bus\n");
     }
 
     //if (! org_freedesktop_DBus_request_name( proxy, M_DBUS_KBDD_SERVICE,
     //            DBUS_NAME_FLAG_DO_NOT_QUEUE, &request_ret, &error) )
-    if (! dbus_g_proxy_call( proxy, 
+    if (! dbus_g_proxy_call( proxy,
                 "RequestName",
                 &error,
                 G_TYPE_STRING, M_DBUS_KBDD_SERVICE,
                 G_TYPE_UINT, 0,
-                G_TYPE_INVALID, 
+                G_TYPE_INVALID,
                 G_TYPE_UINT, &result,
                 G_TYPE_INVALID))
     {
@@ -189,7 +185,7 @@ int dbus_init( ) {
         exit (EXIT_FAILURE);
     }
     printf(":main RequestName returned %s.\n", request_ret);
-    if ( result != 1 ) 
+    if ( result != 1 )
     {
         fprintf(stderr,"Failed to get the primary well-known name.\n");
         exit (EXIT_FAILURE);
@@ -198,7 +194,7 @@ int dbus_init( ) {
     printf(":main Creating one MKbddService Object\n");
 
     service = g_object_new(M_TYPE_KBDD_SERVICE, NULL);
-    if (service == NULL) 
+    if (service == NULL)
     {
         fprintf(stderr,"Failed to create one KbddService instance\n");
         exit (EXIT_FAILURE);
@@ -214,7 +210,7 @@ int dbus_init( ) {
 }
 
 
-void onLayoutUpdate(uint32_t layout, void * obj) 
+void onLayoutUpdate(uint32_t layout, void * obj)
 {
 //    dbg(" EVENT LAYOUT CHANGED %u", layout);
     char * layout_name = NULL;
@@ -230,7 +226,7 @@ void onLayoutUpdate(uint32_t layout, void * obj)
 int main(int argc, char * argv[])
 {
 //    dbg("kbdd starting WITH debug");
-    
+
     /**
      * get options part
      *  -h / --help     -- help message
@@ -241,7 +237,7 @@ int main(int argc, char * argv[])
         static int flag_help;
         static int flag_version;
         int c;
-        static struct option long_options[] = 
+        static struct option long_options[] =
         {
             { "nodaemon", no_argument, &flag_nodaemon, 1 },
             { "help",     no_argument, &flag_help,   1 },
@@ -251,7 +247,7 @@ int main(int argc, char * argv[])
             { 0, 0, 0, 0}
         };
 
-        while (1) 
+        while (1)
         {
 
             int option_index = 0;
@@ -261,10 +257,10 @@ int main(int argc, char * argv[])
             if ( c == -1 )
                 break;
 
-            switch ( c ) 
+            switch ( c )
             {
                 case 0:
-                    if ( long_options[option_index].flag != 0 ) 
+                    if ( long_options[option_index].flag != 0 )
                         break;
                 case 'n':
                     flag_nodaemon = 1;
@@ -298,13 +294,12 @@ int main(int argc, char * argv[])
 #ifndef DAEMON
         main_fork();
 #else
-        if ( daemon(0,0) != 0 ) 
+        if ( daemon(0,0) != 0 )
             perror("Failed to daemonize.\n");
 #endif
     }
 
 #ifdef ENABLE_DBUS
-    g_type_init();
     GMainLoop * mainloop = NULL;
     mainloop = g_main_loop_new(NULL,FALSE);
     if ( !g_thread_supported () ) {
@@ -324,8 +319,8 @@ int main(int argc, char * argv[])
     kbdd_setupUpdateCallback(onLayoutUpdate, service);
     Display * dpy;
     dpy = (Display *)kbdd_get_display();
-    GPollFD dpy_pollfd = {(struct _XDisplay*)dpy->fd, 
-        G_IO_IN | G_IO_HUP | G_IO_ERR, 
+    GPollFD dpy_pollfd = {(struct _XDisplay*)dpy->fd,
+        G_IO_IN | G_IO_HUP | G_IO_ERR,
         0};
 
     GSourceFuncs x11_source_funcs = {
@@ -366,4 +361,4 @@ void main_version()
 
 
 
-//vim:ts=4:expandtab 
+//vim:ts=4:expandtab
