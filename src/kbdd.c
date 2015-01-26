@@ -318,7 +318,7 @@ int main(int argc, char * argv[])
 #else
     kbdd_setupUpdateCallback(onLayoutUpdate, service);
     Display * dpy;
-    dpy = (Display *)kbdd_get_display();
+    dpy = kbdd_get_display();
     GPollFD dpy_pollfd = {(struct _XDisplay*)dpy->fd,
         G_IO_IN | G_IO_HUP | G_IO_ERR,
         0};
