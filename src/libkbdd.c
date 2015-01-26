@@ -176,7 +176,8 @@ _kbdd_initialize_listeners()
     assert(_kbdd.display!=NULL);
     dbg("keyboard initialized");
     XWindowAttributes wa;
-    int scr = DefaultScreen( _kbdd.display );
+    const int scr = DefaultScreen( _kbdd.display );
+    (void)scr; // do not emit warning about unused variable.
     _kbdd.root_window = DefaultRootWindow( _kbdd.display);
     XGetWindowAttributes(_kbdd.display, _kbdd.root_window, &wa);
     XSelectInput(_kbdd.display, _kbdd.root_window, root_events | wa.your_event_mask);
@@ -190,8 +191,9 @@ _kbdd_initialize_listeners()
         XkbSelectEventDetails( _kbdd.display, XkbUseCoreKbd, XkbStateNotify,
                     XkbAllStateComponentsMask, XkbGroupStateMask);
         int n;
-        Atom * atoms = XListProperties(_kbdd.display, _kbdd.root_window, &n);
-        size_t i;
+        const Atom * atoms = XListProperties(_kbdd.display, _kbdd.root_window, &n);
+        (void)atoms; // do not emit warning about unused variable.
+        int i;
         for (i=0;i<n;i++) {
             dbg("%s",XGetAtomName(_kbdd.display,atoms[i]));
         }
@@ -310,7 +312,8 @@ _on_propertyEvent_ewmh(XEvent *e)
 {
     dbg("property");
     XPropertyEvent * ev = &e->xproperty;
-    Window w;
+    (void)ev;
+    Window w = None;
     _get_active_window(&w);
     kbdd_set_window_layout(w);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
@@ -323,8 +326,8 @@ _on_propertyEvent_generic(XEvent *e)
     XSetErrorHandler(_xerrordummy);
     XPropertyEvent * ev = &e->xproperty;
     if (ev->window!=_kbdd.root_window
-		    || ev->atom!=_kbdd.atom_netActiveWindow)
-	    return;
+            || ev->atom!=_kbdd.atom_netActiveWindow)
+        return;
     _kbdd_focus_window(ev->window);
     int revert;
     kbdd_set_window_layout(ev->window);
@@ -338,12 +341,12 @@ _on_propertyEvent_generic(XEvent *e)
  *  - set window layout
  */
 static void
-_on_focusEvent_ewmh(XEvent *e)
+_on_focusEvent_ewmh(XEvent * e)
 {
+    (void)e;
     dbg("focus");
     XSetErrorHandler(_xerrordummy);
-    XFocusChangeEvent *ev = &e->xfocus;
-    Window focused_win;
+    Window focused_win = None;
     _get_active_window(&focused_win);
     kbdd_set_window_layout(focused_win);
 }
@@ -409,16 +412,16 @@ _on_xkbEvent(XkbEvent ev)
 {
     switch (ev.any.xkb_type)
     {
-        case XkbStateNotify:
+        case XkbStateNotify: do {
             dbg( "LIBKBDD state notify event\n");
-            uint32_t grp = ev.state.group;
-            Window focused_win;
-            int revert;
+            int grp = ev.state.group;
+            Window focused_win = None;
             _get_active_window_fallback(ev.any.display, &focused_win);
             if (grp == ev.state.locked_group) { //do not save layout with modifier
                 _kbdd.prevGroup = grp;
                 _kbdd_update_window_layout( focused_win, grp);
             }
+            } while ( 0 );
             break;
         case XkbNewKeyboardNotify:
             dbg("kbdnotify %u\n",ev.any.xkb_type);
@@ -508,8 +511,7 @@ _kbdd_update_window_layout ( Window window, unsigned char grp )
 void
 kbdd_set_current_window_layout ( uint32_t layout)
 {
-    Window focused_win;
-    int revert;
+    Window focused_win = None;
     _get_active_window_fallback(_kbdd.display, &focused_win);
     if ( focused_win != None )
     {
@@ -524,8 +526,7 @@ kbdd_set_current_window_layout ( uint32_t layout)
 void
 kbdd_set_previous_layout(void)
 {
-    Window focused_win;
-    int revert;
+    Window focused_win = None;
     dbg("set previous layout");
     _get_active_window_fallback(_kbdd.display, &focused_win);
     if ( focused_win != None )
@@ -558,8 +559,7 @@ _kbdd_clean_groups_info( void)
 void
 kbdd_set_next_layout()
 {
-    Window focused_win;
-    int revert;
+    Window focused_win = None;
     dbg("set next layout");
     _get_active_window_fallback(_kbdd.display, &focused_win);
     if ( focused_win != None )
