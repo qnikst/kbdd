@@ -627,7 +627,7 @@ _kbdd_group_names_initialize()
 int
 kbdd_get_layout_name( uint32_t id, char ** layout)
 {
-  if ( id < 0 || id>=_group_count ) return 0;
+  if ( id>=_group_count ) return 0;
   dbg( "layout: %s",_group_names[id] );
   *layout = strdup( (const char *)_group_names[id] );
   return 1;
