@@ -1,5 +1,5 @@
-/********************************************************************* 
- * Kbdd - simple per-window-keyboard layout library and deamon 
+/*********************************************************************
+ * Kbdd - simple per-window-keyboard layout library and deamon
  * Copyright (C) 2010  Alexander V Vershilov and collaborators
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
-#ifndef _KBDD_PERWINDOW_H
+#ifndef _KBDD_PERWINDOW_H_
 #define _KBDD_PERWINDOW_H_
 
 #include <stdint.h>

@@ -1,5 +1,5 @@
-/********************************************************************* 
- * Kbdd - simple per-window-keyboard layout library and deamon 
+/*********************************************************************
+ * Kbdd - simple per-window-keyboard layout library and deamon
  * Copyright (C) 2010  Alexander V Vershilov and collaborators
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 #include "../libkbdd.h"
 
 #include "assert.h"
+
+#include <string.h>
 
 G_DEFINE_TYPE(MKbddService, m_kbdd_service, G_TYPE_OBJECT)
 
@@ -64,7 +66,7 @@ m_kbdd_service_class_init (MKbddServiceClass *klass)
     /* SIGNAL_LAYOUT_NAME_CHANGED */ {
         guint signalId;
         signalId = g_signal_new(signalNames[1],
-                G_OBJECT_CLASS_TYPE(klass), 
+                G_OBJECT_CLASS_TYPE(klass),
                 G_SIGNAL_RUN_LAST,
                 0,
                 NULL,
@@ -95,7 +97,7 @@ m_kbdd_service_new (void)
 static void
 kbdd_service_emitSignal(MKbddService * obj,
                         ValueSignalNumber num,
-                        const char * message) 
+                        const char * message)
 {
     MKbddServiceClass * klass = M_KBDD_SERVICE_GET_CLASS(obj);
     assert(obj!=NULL);
@@ -107,10 +109,10 @@ kbdd_service_emitSignal(MKbddService * obj,
 
 int
 m_kbdd_service_setLayout(MKbddService * obj, unsigned int valueIn,
-        GError ** error) 
+        GError ** error)
 {
     assert(obj != NULL);
-    if (obj->layout != valueIn) 
+    if (obj->layout != valueIn)
     {
         obj->layout = valueIn;
         // Kbdd_set_layot(id);
@@ -123,9 +125,9 @@ m_kbdd_service_setLayout(MKbddService * obj, unsigned int valueIn,
  * Get current layout
  * @param uint32_t valueOut - current layout
  *
- * @TODO: set normal types 
+ * @TODO: set normal types
  */
-int 
+int
 m_kbdd_service_get_layout(MKbddService * obj, unsigned int * valueOut, GError ** error)
 {
     assert( obj != NULL );
@@ -141,20 +143,20 @@ m_kbdd_service_get_layout(MKbddService * obj, unsigned int * valueOut, GError **
  * @TODO improve avalability to set previous layout
  */
 int
-m_kbdd_service_next_layout(MKbddService *obj, GError ** error) 
+m_kbdd_service_next_layout(MKbddService *obj, GError ** error)
 {
     kbdd_set_next_layout();
     return 1;
 }
 
-int 
+int
 m_kbdd_service_prev_layout(MKbddService *obj, GError ** error)
 {
     kbdd_set_previous_layout();
     return 1;
 }
 
-int 
+int
 m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 {
     //Not yet implements (and I think will never be)
@@ -163,17 +165,17 @@ m_kbdd_service_set_policy(MKbddService *obj, unsigned int value, GError**error)
 }
 
 /**
- *  Get symbolic layout name 
+ *  Get symbolic layout name
  *  @param uint32_t id   - layout id
- *  @param char * result - result 
+ *  @param char * result - result
  */
-int 
+int
 m_kbdd_service_get_layout_name(MKbddService *obj, unsigned int id, char ** value, GError **error)
 {
     assert( obj != NULL );
     assert( value != NULL );
-    char * tmp; 
-    if ( kbdd_get_layout_name(id, &tmp) ) 
+    char * tmp;
+    if ( kbdd_get_layout_name(id, &tmp) )
     {
 //        dbg("returned: %s", tmp);
 //      dbg("value addr %p", *value);
@@ -192,7 +194,7 @@ void
 m_kbdd_service_update_layout(MKbddService *obj, uint32_t value, const char * layout_name)
 {
     assert(obj != NULL);
-    if (obj->layout != value) 
+    if (obj->layout != value)
     {
         obj->layout = value;
         MKbddServiceClass * klass = M_KBDD_SERVICE_GET_CLASS(obj);
@@ -208,7 +210,7 @@ m_kbdd_service_update_layout(MKbddService *obj, uint32_t value, const char * lay
 }
 
 int
-m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError **error) 
+m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError **error)
 {
     //TODO check min max value
 //    dbg("dbus-set layout %u",value);
@@ -216,7 +218,7 @@ m_kbdd_service_set_layout(MKbddService *obj, uint32_t value, GError **error)
     return 1;
 }
 
-int 
+int
 m_kbdd_service_get_current_layout(MKbddService *obj,uint32_t *value,GError **error)
 {
     *value = kbdd_get_current_layout();
