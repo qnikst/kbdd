@@ -62,4 +62,6 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0], [], [AC_MSG_ERROR([Glib not found])])
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 
-AC_OUTPUT(Makefile src/Makefile src/dbus/Makefile)
+AC_CONFIG_FILES([Makefile src/Makefile src/dbus/Makefile])
+
+AC_OUTPUT
