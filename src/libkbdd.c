@@ -44,7 +44,6 @@ static int  _kbdd_add_window(const Window window, const int accept_layout);
 static Display *  _kbdd_initialize_display();
 static void _kbdd_initialize_listeners();
 static inline void _kbdd_focus_window(Window w);
-static inline void _kbdd_proceed_event(XkbEvent ev);
 static void _get_active_window(Window *win);
 static void _get_active_window_fallback(Display *, Window *);
 static void _on_enterEvent(XEvent *e);
@@ -54,8 +53,6 @@ static void _on_propertyEvent_ewmh(XEvent *e);
 static void _on_propertyEvent_generic(XEvent *e);
 static void _on_focusEvent_ewmh(XEvent *e);
 static void _on_focusEvent_generic(XEvent *e);
-static void _on_mappingEvent(XEvent *e);
-static void _on_keypressEvent(XEvent *e);
 int is_ehwm_supported();
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
 static inline void _on_xkbEvent(XkbEvent ev);
@@ -85,8 +82,6 @@ static void (*handler_ewmh[LASTEvent]) (XEvent *) = {
     [PropertyNotify] = _on_propertyEvent_ewmh, //28
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
-//    [MappingNotify]  = _on_mappingEvent,
-//    [KeymapNotify]   = _on_mappingEvent
 };
 
 static void (*handler_generic[LASTEvent]) (XEvent *) = {
@@ -96,8 +91,6 @@ static void (*handler_generic[LASTEvent]) (XEvent *) = {
     [PropertyNotify] = _on_propertyEvent_generic,
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
-//    [MappingNotify]  = _on_mappingEvent,
-//    [KeymapNotify]   = _on_mappingEvent
 };
 
 const static long w_events = EnterWindowMask
@@ -385,19 +378,6 @@ _on_enterEvent(XEvent *e)
     _kbdd_focus_window(ev->window);
     dbg("enter event");
     return;
-}
-
-static void
-_on_mappingEvent(XEvent *e)
-{
-    dbg("in map request");
-    XMappingEvent *ev = &e->xmapping;
-    if ( ev->request == MappingKeyboard )
-    {
-      _kbdd_perwindow_clean();
-      _kbdd_group_names_initialize();
-    }
-    XRefreshKeyboardMapping(ev);
 }
 
 inline void
