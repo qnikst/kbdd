@@ -29,9 +29,6 @@
 #include "libkbdd.h"
 #include "common-defs.h"
 
-#define CLEANMASK(mask) (mask & ~(LockMask))
-#define LENGTH(X)       (sizeof X / sizeof X[0])
-
 /**
  * method prototypes
  **/
