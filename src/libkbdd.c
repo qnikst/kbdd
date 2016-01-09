@@ -53,7 +53,7 @@ static void _on_propertyEvent_ewmh(XEvent *e);
 static void _on_propertyEvent_generic(XEvent *e);
 static void _on_focusEvent_ewmh(XEvent *e);
 static void _on_focusEvent_generic(XEvent *e);
-int is_ehwm_supported();
+static int is_ehwm_supported(void);
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
 static inline void _on_xkbEvent(XkbEvent ev);
 static inline int kbdd_real_lock(int);
@@ -155,7 +155,7 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
     _kbdd._updateUserdata = userData;
 }
 
-Display * kbdd_get_display() {
+Display * kbdd_get_display(void) {
     return _kbdd.display;
 }
 /**
@@ -552,7 +552,7 @@ kbdd_set_next_layout()
 }
 
 uint32_t
-kbdd_get_current_layout()
+kbdd_get_current_layout(void)
 {
     uint32_t result = 0;
     XkbStateRec state;
@@ -651,7 +651,7 @@ static void _get_active_window_fallback(Display * d, Window *win) {
     }
 }
 
-int is_ehwm_supported() {
+int is_ehwm_supported(void) {
     Atom actualType;
     int  actualFormat;
     unsigned char *propReturn = 0;

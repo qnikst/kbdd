@@ -47,8 +47,8 @@
 static int flag_nodaemon;
 
 // prototypes >>>
-void main_help();
-void main_version();
+static void main_help(void);
+static void main_version(void);
 // <<< prototypes
 
 #ifdef ENABLE_DBUS
@@ -141,7 +141,7 @@ int main_fork()
 }
 
 #ifdef ENABLE_DBUS
-int dbus_init( ) {
+static int dbus_init(void) {
 
     char * request_ret = NULL;
     unsigned int result;
@@ -210,7 +210,7 @@ int dbus_init( ) {
 }
 
 
-void onLayoutUpdate(uint32_t layout, void * obj)
+static void onLayoutUpdate(uint32_t layout, void * obj)
 {
 //    dbg(" EVENT LAYOUT CHANGED %u", layout);
     char * layout_name = NULL;
