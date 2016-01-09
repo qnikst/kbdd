@@ -7,6 +7,9 @@ AC_CONFIG_HEADERS(config.h)
 
 AM_INIT_AUTOMAKE
 
+# use explicit static linking in lib*.a style
+AM_PROG_AR
+
 AC_SUBST(PACKAGE_URL, [http://github.com/qnikst/kbdd] )
 
 # Checks for programs.
