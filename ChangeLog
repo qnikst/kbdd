@@ -1,3 +1,6 @@
+2016-11-06	v0.7.1 vesion bump
+2016-11-06  Fix in XKB event processing loop (Bug #44)
+
 2012-12-25  Fix in event checking, thanks to vladimir-g (Bug #22)
 
 2012-12-12	v0.7 vesion bump

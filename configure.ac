@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([kbdd], [0.7], [qnikst@gentoo.ru])
+AC_INIT([kbdd], [0.7.1], [qnikst@gentoo.ru])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS(config.h)
 
