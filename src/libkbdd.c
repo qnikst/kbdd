@@ -250,21 +250,23 @@ inline void
 _kbdd_inner_iter(Display * display)
 {
     assert(display != NULL);
-    XkbEvent ev;
-    XNextEvent( display, &ev.core);
-    if (ev.type == _kbdd._xkbEventType)
-        _on_xkbEvent(ev);
-    else {
-//        dbg("%u %u",FocusIn, ev.type);
-        if ( _kbdd.supportEWMH ) {
-            if ( handler_ewmh[ev.type] )
-                handler_ewmh[ev.type](&ev.core);
-        } else
-            if ( handler_generic[ev.type] ) {
-                handler_generic[ev.type](&ev.core);
-            } else {
-                dbg("no handler for %u", ev.type);
-            }
+    while (XPending(display)) {
+        XkbEvent ev;
+        XNextEvent( display, &ev.core);
+        if (ev.type == _kbdd._xkbEventType)
+            _on_xkbEvent(ev);
+        else {
+            //        dbg("%u %u",FocusIn, ev.type);
+            if ( _kbdd.supportEWMH ) {
+                if ( handler_ewmh[ev.type] )
+                    handler_ewmh[ev.type](&ev.core);
+            } else
+                if ( handler_generic[ev.type] ) {
+                    handler_generic[ev.type](&ev.core);
+                } else {
+                    dbg("no handler for %u", ev.type);
+                }
+        }
     }
 }
 
