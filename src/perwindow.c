@@ -25,22 +25,18 @@
 
 GHashTable *gStorage = NULL;
 
-#ifdef DEBUG
-void debug();
-#else
-#define debug(dummy...) 
-#endif
+static void debug(void);
 
 GROUP_TYPE _kbdd_perwindow_init_default(WINDOW_TYPE win, int isCurrent);
 
 void 
-_kbdd_perwindow_init() {
+_kbdd_perwindow_init(void) {
     if ( gStorage!=NULL ) return; 
     gStorage = g_hash_table_new(g_direct_hash, NULL);
 }
 
 void 
-_kbdd_perwindow_free() {
+_kbdd_perwindow_free(void) {
     if ( gStorage != NULL ) {
         g_hash_table_destroy(gStorage);
     }
@@ -130,14 +126,14 @@ _kbdd_perwindow_remove(WINDOW_TYPE win)
 
 
 void
-_kbdd_perwindow_clean() 
+_kbdd_perwindow_clean(void)
 {
     assert( gStorage != NULL );
     g_hash_table_remove_all(gStorage);
 }
 
-#ifdef DEBUG
 void debug() {
+#ifdef DEBUG
     GHashTableIter iter;
     g_hash_table_iter_init (&iter, gStorage);
     int size=g_hash_table_size(gStorage);
@@ -149,7 +145,7 @@ void debug() {
         printf("key %p ---> %u \n",GPOINTER_TO_UINT(key_),GPOINTER_TO_UINT(val));
     }
     printf("=================\n");
-}
 #endif
+}
 
 //vim:ts=4:expandtab

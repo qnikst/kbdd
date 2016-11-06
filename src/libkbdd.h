@@ -29,11 +29,11 @@ typedef void (*UpdateCallback)(unsigned int, void *);
 /**
  * Initialize subsystem
  */
-void kbdd_init();
+void kbdd_init(void);
 /**
  * Deinitialize subsystem
  */
-void kbdd_free();
+void kbdd_free(void);
 
 /**
  * Update window layout
@@ -51,9 +51,9 @@ void kbdd_setupUpdateCallback(UpdateCallback, void *);
 
 int  kbdd_get_layout_name( uint32_t id, char ** layout);
 void kbdd_set_current_window_layout ( uint32_t ); 
-void kbdd_set_previous_layout();
-void kbdd_set_next_layout();
-uint32_t kbdd_get_current_layout();
+void kbdd_set_previous_layout(void);
+void kbdd_set_next_layout(void);
+uint32_t kbdd_get_current_layout(void);
 /**
  * default main loop that need to make xkbd working
  */
@@ -61,7 +61,7 @@ void * kbdd_default_loop();
 
 int kbdd_default_iter(void *);
 
-Display * kbdd_get_display();
+Display * kbdd_get_display(void);
 
 #endif
 //vim:ts=4:expandtab

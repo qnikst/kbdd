@@ -29,9 +29,6 @@
 #include "libkbdd.h"
 #include "common-defs.h"
 
-#define CLEANMASK(mask) (mask & ~(LockMask))
-#define LENGTH(X)       (sizeof X / sizeof X[0])
-
 /**
  * method prototypes
  **/
@@ -44,7 +41,6 @@ static int  _kbdd_add_window(const Window window, const int accept_layout);
 static Display *  _kbdd_initialize_display();
 static void _kbdd_initialize_listeners();
 static inline void _kbdd_focus_window(Window w);
-static inline void _kbdd_proceed_event(XkbEvent ev);
 static void _get_active_window(Window *win);
 static void _get_active_window_fallback(Display *, Window *);
 static void _on_enterEvent(XEvent *e);
@@ -54,9 +50,7 @@ static void _on_propertyEvent_ewmh(XEvent *e);
 static void _on_propertyEvent_generic(XEvent *e);
 static void _on_focusEvent_ewmh(XEvent *e);
 static void _on_focusEvent_generic(XEvent *e);
-static void _on_mappingEvent(XEvent *e);
-static void _on_keypressEvent(XEvent *e);
-int is_ehwm_supported();
+static int is_ehwm_supported(void);
 int _xerrordummy(Display *dpy, XErrorEvent *ee);
 static inline void _on_xkbEvent(XkbEvent ev);
 static inline int kbdd_real_lock(int);
@@ -85,8 +79,6 @@ static void (*handler_ewmh[LASTEvent]) (XEvent *) = {
     [PropertyNotify] = _on_propertyEvent_ewmh, //28
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
-//    [MappingNotify]  = _on_mappingEvent,
-//    [KeymapNotify]   = _on_mappingEvent
 };
 
 static void (*handler_generic[LASTEvent]) (XEvent *) = {
@@ -96,8 +88,6 @@ static void (*handler_generic[LASTEvent]) (XEvent *) = {
     [PropertyNotify] = _on_propertyEvent_generic,
     [DestroyNotify]  = _on_destroyEvent,
     [CreateNotify]   = _on_createEvent,
-//    [MappingNotify]  = _on_mappingEvent,
-//    [KeymapNotify]   = _on_mappingEvent
 };
 
 const static long w_events = EnterWindowMask
@@ -162,7 +152,7 @@ kbdd_setupUpdateCallback(UpdateCallback callback,void * userData )
     _kbdd._updateUserdata = userData;
 }
 
-Display * kbdd_get_display() {
+Display * kbdd_get_display(void) {
     return _kbdd.display;
 }
 /**
@@ -389,19 +379,6 @@ _on_enterEvent(XEvent *e)
     return;
 }
 
-static void
-_on_mappingEvent(XEvent *e)
-{
-    dbg("in map request");
-    XMappingEvent *ev = &e->xmapping;
-    if ( ev->request == MappingKeyboard )
-    {
-      _kbdd_perwindow_clean();
-      _kbdd_group_names_initialize();
-    }
-    XRefreshKeyboardMapping(ev);
-}
-
 inline void
 _kbdd_focus_window(Window w)
 {
@@ -574,7 +551,7 @@ kbdd_set_next_layout()
 }
 
 uint32_t
-kbdd_get_current_layout()
+kbdd_get_current_layout(void)
 {
     uint32_t result = 0;
     XkbStateRec state;
@@ -673,7 +650,7 @@ static void _get_active_window_fallback(Display * d, Window *win) {
     }
 }
 
-int is_ehwm_supported() {
+int is_ehwm_supported(void) {
     Atom actualType;
     int  actualFormat;
     unsigned char *propReturn = 0;

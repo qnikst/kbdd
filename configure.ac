@@ -7,6 +7,9 @@ AC_CONFIG_HEADERS(config.h)
 
 AM_INIT_AUTOMAKE
 
+# use explicit static linking in lib*.a style
+AM_PROG_AR
+
 AC_SUBST(PACKAGE_URL, [http://github.com/qnikst/kbdd] )
 
 # Checks for programs.
@@ -62,4 +65,6 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0], [], [AC_MSG_ERROR([Glib not found])])
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 
-AC_OUTPUT(Makefile src/Makefile src/dbus/Makefile)
+AC_CONFIG_FILES([Makefile src/Makefile src/dbus/Makefile])
+
+AC_OUTPUT
