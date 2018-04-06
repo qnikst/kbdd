@@ -321,7 +321,7 @@ _on_propertyEvent_generic(XEvent *e)
             || ev->atom!=_kbdd.atom_netActiveWindow)
         return;
     _kbdd_focus_window(ev->window);
-    int revert;
+    //int revert;
     kbdd_set_window_layout(ev->window);
     dbg("property send_event %i\nwindow %i\nstate %i\n",ev->send_event,(uint32_t)ev->window, ev->state);
     //dbg("focused window: %u (%i)",focused_win,revert);
