@@ -39,7 +39,6 @@ m_kbdd_service_class_init (MKbddServiceClass *klass)
         SIGNAL_LAYOUT_CHANGED ,
         SIGNAL_LAYOUT_NAME_CHANGED
     };
-    int i;
 
     //Debug
     assert( klass != NULL);
