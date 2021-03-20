@@ -654,9 +654,20 @@ int is_ehwm_supported(void) {
     int  actualFormat;
     unsigned char *propReturn = 0;
     long unsigned int nItems, bytesAfter;
-    int ret = XGetWindowProperty(_kbdd.display,_kbdd.root_window, _kbdd.atom_netActiveWindow, 0, sizeof(Window), 0, XA_WINDOW,
-                        &actualType, &actualFormat, &nItems, &bytesAfter, &propReturn);
+    Window win = 0;
+    Atom supporingWMCheck = XInternAtom(_kbdd.display, "_NET_SUPPORTING_WM_CHECK", 0);
+    Atom wmName = XInternAtom(_kbdd.display, "_NET_WM_NAME", 0);
+    int ret = XGetWindowProperty(_kbdd.display, _kbdd.root_window, supporingWMCheck,
+                                 0, sizeof(Window), 0, XA_WINDOW, &actualType, &actualFormat,
+                                 &nItems, &bytesAfter, &propReturn);
     if ( ret == Success && propReturn) {
+        memcpy(&win, propReturn, sizeof(Window));
+        XFree(propReturn);
+        ret = XGetWindowProperty(_kbdd.display, win, wmName, 0, sizeof(Window),
+                                 0, XA_WINDOW, &actualType, &actualFormat, &nItems,
+                                 &bytesAfter, &propReturn);
+    }
+    if ( ret == Success) {
         XFree(propReturn);
         _kbdd.supportEWMH = True;
         fprintf(stderr,"EWMH is supported\n");
