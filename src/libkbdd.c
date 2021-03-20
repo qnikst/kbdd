@@ -618,6 +618,7 @@ kbdd_real_lock(int group) {
         result = XkbLockGroup(_kbdd.display, XkbUseCoreKbd, group);
         if (result) {
             _kbdd.prevGroup = group;
+            XFlush(_kbdd.display);
         }
     }
     return result;
