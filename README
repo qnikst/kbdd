@@ -29,7 +29,7 @@ steps [1]_::
     make install
 
 Configuration options:
-  * ``enable-debug`` - *[default: disabled]* adds additional debuging info
+  * ``enable-debug`` - *[default: disabled]* adds additional debugging info
   * ``enable-dbus``  - *[default:  enabled]* enable dbus support
 
 .. [1] If you use git version, you should generate installation files: you
