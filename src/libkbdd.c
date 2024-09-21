@@ -575,8 +575,7 @@ _kbdd_group_names_initialize()
     assert(desc != NULL);
     XkbGetControls(display, XkbAllControlsMask, desc);
     XkbGetNames(display, XkbSymbolsNameMask | XkbGroupNamesMask, desc);
-    if ( (desc->names == NULL)
-            ||  (desc->names->groups == NULL) ) {
+    if (desc->names == NULL) {
         dbg("unable to get names");
         return;
     }
