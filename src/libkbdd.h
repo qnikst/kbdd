@@ -57,7 +57,7 @@ uint32_t kbdd_get_current_layout(void);
 /**
  * default main loop that need to make xkbd working
  */
-void * kbdd_default_loop();
+void * kbdd_default_loop(Display * display);
 
 int kbdd_default_iter(void *);
 
